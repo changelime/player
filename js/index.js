@@ -13,6 +13,11 @@
 	var playing = 0;
 	var STATES = {NEXT:"NEXT",PREV:"PREV"};
 	var isload = false;
+	var resize = function(){
+		albumPic.style.top = (document.body.offsetHeight/2)-256+"px";
+		albumPic.style.left = (document.body.offsetWidth/2)-256+"px";
+	};
+	document.body.onresize = resize;
 	var dropFiles = function (event)
 	{
 		var html = "",
@@ -65,6 +70,8 @@
 	            base64String += String.fromCharCode(image.data[i]);
 	        }
 		    albumPic.src = "data:" + image.format + ";base64," + window.btoa(base64String);
+		    albumPic.style.display = "initial";
+		    resize();
 		    stackBlurImage("albumPic", "canvas", 180, false );
 		    document.body.style.backgroundImage = 'url("' + canvas.toDataURL() + '")';
 		    info.innerText = tags.title + " —— " + tags.artist;
