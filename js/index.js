@@ -8,11 +8,16 @@
 	var bar = document.getElementById("bar");
 	var control = document.getElementById("control");
 	var canvas = document.getElementById("canvas");
+	var style = document.createElement("style");
+	var head = document.getElementsByTagName("head")[0];
+	style.type = "text/css";
+	head.appendChild(style);
 	var progressStop = false;
 	var pressProgress = false;
 	var playing = 0;
 	var STATES = {NEXT:"NEXT",PREV:"PREV"};
 	var isload = false;
+	var bg = null;
 	var resize = function(){
 		albumPic.style.top = (document.body.offsetHeight/2)-256+"px";
 		albumPic.style.left = (document.body.offsetWidth/2)-256+"px";
@@ -20,8 +25,7 @@
 	document.body.onresize = resize;
 	var dropFiles = function (event)
 	{
-		var html = "",
-			files = null,
+		var files = null,
 			i = 0,
 			len = 0;
 
@@ -73,7 +77,12 @@
 		    albumPic.style.display = "initial";
 		    resize();
 		    stackBlurImage("albumPic", "canvas", 180, false );
-		    document.body.style.backgroundImage = 'url("' + canvas.toDataURL() + '")';
+		    if(bg)
+		    	style.removeChild(bg);
+		    bg = document.createTextNode('.bg{background-image:url("'+canvas.toDataURL()+'")}');
+		    style.appendChild(bg);
+
+		    //document.body.style.backgroundImage = 'url("' + canvas.toDataURL() + '")';
 		    info.innerText = tags.title + " —— " + tags.artist;
 		}, 
 		{
