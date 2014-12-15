@@ -1,0 +1,28 @@
+.progressbar
+{
+	height: 10px;
+	width: auto;
+	background-color: rgba(255,255,255,0.2);
+	border:1px rgba(255,255,255,0) solid;
+	border-radius:25px;
+}
+.inside
+{
+	height: 8px;
+	width: 12px;
+	background-color: #41a868;
+	border:1px rgba(255,255,255,0) solid;
+	border-radius:25px;
+}
+.flag
+{
+	height: 5px;
+	width: 5px;
+	border:7px #f1f1f4 solid;
+	border-radius:25px;
+	position: relative;
+	top: -6px;
+	float: right;
+	cursor: pointer;
+	box-sizing: initial;
+}

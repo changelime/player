@@ -3,8 +3,8 @@
 	<head>
 		<title>player</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body class="bg">
@@ -27,8 +27,12 @@
 			</div>
 		</div>
 		<div id="bottomBar">
-			<div id="progress"></div>
-			<label id="time">0.00 / 0.00</label>
+			<div id="progress" class="progressbar"></div>
+			<br>
+			<div id="infoBox">
+				<label id="time" >0.00 / 0.00</label>
+				<label id="fraction" >0 / 0</label>
+			</div>
 			<div id="control" class="text-center">
 				<span class="glyphicon glyphicon-backward"></span>
 				<span class="glyphicon glyphicon-pause"></span>
@@ -37,8 +41,8 @@
 		</div>
 		<canvas style="display:none;" id="canvas"></canvas>
 		<audio id="bar" autoplay="autoplay" src=""></audio>
-		<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
-		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+		<script src="js/event.js"></script>
+		<script src="js/progressbar.js"></script>
 		<script src="js/id3-minimized.js"></script>
 		<script src="js/StackBlur.js"></script>
 		<script src="js/index.js"></script>
