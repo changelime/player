@@ -1,11 +1,9 @@
 (function(){
 	var music = [],
 		info = document.getElementById("info"),
-		main = document.getElementById("main"),
 		albumPic = document.getElementById("albumPic"),
 		time = document.getElementById("time"),
 		fraction = document.getElementById("fraction"),
-		progress = document.getElementById("progress"),
 		bar = document.getElementById("bar"),
 		control = document.getElementById("control"),
 		canvas = document.getElementById("canvas"),
@@ -29,36 +27,43 @@
 				len = 0;
 
 			event.preventDefault();
-			if(event.type == "drop")
+			if(event.type == "drop" && event.dataTransfer.files.length)
 			{
+
 				files = event.dataTransfer.files;
 				len = files.length;
-				while(len > i)
+				while( len > i )
 				{
-					music.push(files[i]);
+					if( files[i].type == "audio/mp3" )
+						music.push(files[i]);
 					i++;
 				}
-				isload = true;
-				play();
-				document.body.removeEventListener("dragenter",dropFiles,false);
-				document.body.removeEventListener("dragover",dropFiles,false);
-				document.body.removeEventListener("drop",dropFiles,false);
-				dropFiles = null;
+				if (music.length)
+				{
+					isload = true;
+					play();
+					document.body.removeEventListener("dragenter",dropFiles,false);
+					document.body.removeEventListener("dragover",dropFiles,false);
+					document.body.removeEventListener("drop",dropFiles,false);
+					dropFiles = null;
+				}
 			}
 		};
 	style.type = "text/css";
 	head.appendChild(style);
 	function play(state)
 	{
-		if(!isload)
-			return;
-		if(state === STATES.NEXT)
-			playing = (playing+1) % music.length;
-		else
-			playing = (playing-1 == -1) ? music.length-1 : (playing-1) % music.length;
-		var file = music[playing];
-		var reader = new FileReader();
+		switch(state)
+		{
+			case STATES.NEXT : playing = (playing+1) % music.length;
+				break;
+			case STATES.PREV : playing = !playing ? music.length-1 : (playing-1) % music.length;
+				break;
+		}
+		var file = music[playing],
+			reader = new FileReader();
 		reader.readAsDataURL(file);
+		info.innerText = "载入中...";
 
 		reader.onerror = function(){
 			console.log("error");
@@ -67,9 +72,9 @@
 			bar.src = reader.result;
 		};
 		ID3.loadTags(file.name, function() {//读取ID3信息
-		    var tags = ID3.getAllTags(file.name);
-		    var image = tags.picture;
-	        var base64String = "";
+		    var tags = ID3.getAllTags(file.name),
+		    	image = tags.picture,
+		    	base64String = "";
 	        for (var i = 0; i < image.data.length; i++)
 	        {
 	            base64String += String.fromCharCode(image.data[i]);
@@ -104,7 +109,7 @@
 	control.addEventListener("click",function(event){//控制按钮
 		var e = event.target;
 		var localName = e.localName;
-		if(localName == "span")
+		if(localName == "span" && isload)
 		{
 			switch(e.className)
 			{
