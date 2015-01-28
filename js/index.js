@@ -6,13 +6,22 @@
 		fraction = document.getElementById("fraction"),
 		bar = document.getElementById("bar"),
 		control = document.getElementById("control"),
+		changeStatus = document.getElementById("changeStatus"),
 		canvas = document.getElementById("canvas"),
 		style = document.createElement("style"),
 		head = document.getElementsByTagName("head")[0],
 		dragging = false,
 		pressProgress = false,
 		playing = 0,
-		STATES = {NEXT:"NEXT",PREV:"PREV"},
+		STATES = {
+			NEXT:"NEXT",
+			PREV:"PREV"
+		},
+		playingStatus = {
+			random : false,
+			singleRoll : false,
+			listRoll : true,
+		},
 		isload = false,
 		bg = null,
 		target = new Progressbar("#progress"),
@@ -51,8 +60,10 @@
 		};
 	style.type = "text/css";
 	head.appendChild(style);
-	function play(state)
+	function choise(state)
 	{
+		var file = null;
+		var index = playing;
 		switch(state)
 		{
 			case STATES.NEXT : playing = (playing+1) % music.length;
@@ -60,8 +71,27 @@
 			case STATES.PREV : playing = !playing ? music.length-1 : (playing-1) % music.length;
 				break;
 		}
-		var file = music[playing],
-			reader = new FileReader();
+		if(playingStatus.random)
+		{
+			var pickOne = music.pickOne();//随机选取数组中的一个元素
+			file = pickOne.value;
+			playing = pickOne.index;
+		}
+		else if(playingStatus.singleRoll)
+		{
+			playing = index;
+			file = music[playing];
+		}
+		else if(playingStatus.listRoll)
+		{
+			file = music[playing];
+		}
+		return file;
+	}
+	function play(state)
+	{
+		var file = choise(state);
+		reader = new FileReader();
 		reader.readAsDataURL(file);
 		info.innerText = "载入中...";
 
@@ -72,10 +102,10 @@
 			bar.src = reader.result;
 		};
 		ID3.loadTags(file.name, function() {//读取ID3信息
-		    var tags = ID3.getAllTags(file.name),
-		    	image = tags.picture,
-		    	base64String = "";
-	        for (var i = 0; i < image.data.length; i++)
+			var tags = ID3.getAllTags(file.name),
+			image = tags.picture,
+			base64String = "";
+			for (var i = 0; i < image.data.length; i++)
 	        {
 	            base64String += String.fromCharCode(image.data[i]);
 	        }
@@ -130,6 +160,29 @@
 	});
 	bar.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
+	});
+	changeStatus.addEventListener("click",function(event){//改变播放状态，列表循环、随机播放、单曲循环
+			if(playingStatus.listRoll)
+			{
+				playingStatus.listRoll = false;
+				playingStatus.random = true;
+				playingStatus.singleRoll = false;
+				changeStatus.innerText = "随机播放";
+			}
+			else if(playingStatus.random)
+			{
+				playingStatus.listRoll = false;
+				playingStatus.random = false;
+				playingStatus.singleRoll = true;
+				changeStatus.innerText = "单曲循环";
+			}
+			else if(playingStatus.singleRoll)
+			{
+				playingStatus.listRoll = true;
+				playingStatus.random = false;
+				playingStatus.singleRoll = false;
+				changeStatus.innerText = "列表循环";
+			}
 	});
 	target.on("pressProgress",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
 		console.log("pressProgress");
