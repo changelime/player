@@ -12,6 +12,7 @@
 			target : this.target,
 			inside : this.inside,
 			dragging : null,
+			canDrag : false,
 			time : 0,
 			width : this.target.offsetWidth,
 			past : 12,
@@ -22,7 +23,7 @@
 
 		this.target.addEventListener("mousedown",function(event){
 			var insideWith = event.clientX-12;
-			if(!event.clientX == 0 && insideWith < that.bar.target.offsetWidth )
+			if(!event.clientX == 0 && insideWith < that.bar.target.offsetWidth && that.bar.canDrag)
 			{
 				that.bar.inside.style.width = insideWith + "px";
 				that.bar.past = insideWith;
@@ -31,11 +32,14 @@
 			}
 		},true);
 		this.flag.addEventListener("mousedown",function(event){
-			that.bar.dragging = event.target;
-			that.emit({type:"startDragging",message:event});
+			if(that.bar.canDrag)
+			{
+				that.bar.dragging = event.target;
+				that.emit({type:"startDragging",message:event});
+			}
 		},false);
 		document.addEventListener("mousemove",function(event){
-			if(that.bar.dragging !== null)
+			if(that.bar.dragging !== null && that.bar.canDrag)
 			{
 				var insideWith = event.clientX-12;
 				if(!event.clientX == 0 && insideWith < that.bar.target.offsetWidth )
@@ -48,8 +52,11 @@
 			}
 		},false);
 		document.addEventListener("mouseup",function(event){
-			that.bar.dragging = null;
-			that.emit({type:"stopDragging",message:event});
+			if(that.bar.canDrag)
+			{
+				that.bar.dragging = null;
+				that.emit({type:"stopDragging",message:event});
+			}	
 		},false);
 	}
 	Progressbar.prototype = new EventTarget();
@@ -59,6 +66,9 @@
 		this.bar.past = (progress.pastTime*this.bar.per) + this.bar.per;
 		if(this.bar.past > 12)
 			this.inside.style.width = this.bar.past + "px";
+	};
+	Progressbar.prototype.canDrag = function(){
+		this.bar.canDrag = true;
 	};
 	Progressbar.prototype.getPastTime = function(){
 		return this.bar.pastTime;

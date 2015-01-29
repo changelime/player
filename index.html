@@ -3,12 +3,12 @@
 	<head>
 		<title>player</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="D:/work/nodeJs_chatRoom/public/css/bootstrap.min.css" />
+		<link href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" />
 		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body class="bg">
-		<div class="container">
+		<div class="container-fluid">
 			<div id="main" class="row text-center">
 				<div id="text">
 					<label id="info">
@@ -30,8 +30,8 @@
 			<br>
 			<div id="infoBox">
 				<label id="time" >0.00 / 0.00</label>
-				<button id="changeStatus">列表循环</button>
 				<label id="fraction" >0 / 0</label>
+				<span title="列表循环" id="changeMode" class="glyphicon glyphicon-retweet"> </span>
 			</div>
 			<div id="control" class="text-center">
 				<span class="glyphicon glyphicon-backward"></span>

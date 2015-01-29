@@ -8,6 +8,7 @@ body
 	background-color: #222;
 	background-size: 100% 100%;
 	height: 100%;
+	-webkit-user-select: none;
 }
 #albumPic
 {
@@ -46,9 +47,32 @@ label
 {
 	float: right;
 }
+#changeMode
+{
+	float: right;
+	cursor: pointer;
+	font-size: 1.5em;
+	padding: 0px 20px;
+}
+#changeMode:hover
+{
+	color: #fff;
+}
+#text
+{
+	margin-top: 2%;
+}
 #info
 {
 	font-size: 50px;
+}
+.title
+{
+	font-size: 50px;
+}
+.artist
+{
+	font-size: 30px;
 }
 #control
 {

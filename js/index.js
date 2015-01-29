@@ -1,5 +1,6 @@
 (function(){
 	var music = [],
+		text = document.getElementById("text"),
 		info = document.getElementById("info"),
 		albumPic = document.getElementById("albumPic"),
 		time = document.getElementById("time"),
@@ -10,6 +11,8 @@
 		canvas = document.getElementById("canvas"),
 		style = document.createElement("style"),
 		head = document.getElementsByTagName("head")[0],
+		artist = document.createElement("label"),
+		title = document.createElement("label"),
 		dragging = false,
 		pressProgress = false,
 		playing = 0,
@@ -17,10 +20,10 @@
 			NEXT:"NEXT",
 			PREV:"PREV"
 		},
-		playingStatus = {
+		mode = {
 			random : false,
-			singleRoll : false,
-			listRoll : true,
+			repeat : false,
+			repeatAll : true,
 		},
 		isload = false,
 		bg = null,
@@ -55,6 +58,12 @@
 					document.body.removeEventListener("dragover",dropFiles,false);
 					document.body.removeEventListener("drop",dropFiles,false);
 					dropFiles = null;
+					target.canDrag();
+					artist.className = "artist";
+					title.className = "title";
+					text.appendChild(title);
+					text.appendChild(document.createElement("br"));
+					text.appendChild(artist);
 				}
 			}
 		};
@@ -71,18 +80,18 @@
 			case STATES.PREV : playing = !playing ? music.length-1 : (playing-1) % music.length;
 				break;
 		}
-		if(playingStatus.random)
+		if(mode.random)
 		{
 			var pickOne = music.pickOne();//随机选取数组中的一个元素
 			file = pickOne.value;
 			playing = pickOne.index;
 		}
-		else if(playingStatus.singleRoll)
+		else if(mode.repeat)
 		{
 			playing = index;
 			file = music[playing];
 		}
-		else if(playingStatus.listRoll)
+		else if(mode.repeatAll)
 		{
 			file = music[playing];
 		}
@@ -94,6 +103,8 @@
 		reader = new FileReader();
 		reader.readAsDataURL(file);
 		info.innerText = "载入中...";
+		title.innerText = "";
+		artist.innerText = "";
 
 		reader.onerror = function(){
 			console.log("error");
@@ -117,7 +128,9 @@
 		    	style.removeChild(bg);
 		    bg = document.createTextNode('.bg{background-image:url("'+canvas.toDataURL()+'")}');
 		    style.appendChild(bg);
-		    info.innerText = tags.title + " —— " + tags.artist;
+		    info.innerText = "";
+		    title.innerText = tags.title;
+		    artist.innerText = tags.artist;
 		    fraction.innerText = (playing+1) + " / " + music.length;
 		}, 
 		{
@@ -135,6 +148,10 @@
 			bar.volume = bar.volume+0.1 > 1 ? 1 : bar.volume+0.1;
 		else
 			bar.volume = bar.volume-0.1 < 0 ? 0 : bar.volume-0.1;
+	});
+	document.body.addEventListener("dblclick",function(event){
+		event.preventDefault();
+		console.log("message");
 	});
 	control.addEventListener("click",function(event){//控制按钮
 		var e = event.target;
@@ -161,27 +178,30 @@
 	bar.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
 	});
-	changeStatus.addEventListener("click",function(event){//改变播放状态，列表循环、随机播放、单曲循环
-			if(playingStatus.listRoll)
+	changeMode.addEventListener("click",function(event){//改变播放模式，列表循环、随机播放、单曲循环
+			if(mode.repeatAll)
 			{
-				playingStatus.listRoll = false;
-				playingStatus.random = true;
-				playingStatus.singleRoll = false;
-				changeStatus.innerText = "随机播放";
+				mode.repeatAll = false;
+				mode.random = true;
+				mode.repeat = false;
+				changeMode.title = "随机播放";
+				changeMode.className = "glyphicon glyphicon-random";
 			}
-			else if(playingStatus.random)
+			else if(mode.random)
 			{
-				playingStatus.listRoll = false;
-				playingStatus.random = false;
-				playingStatus.singleRoll = true;
-				changeStatus.innerText = "单曲循环";
+				mode.repeatAll = false;
+				mode.random = false;
+				mode.repeat = true;
+				changeMode.title = "单曲循环";
+				changeMode.className = "glyphicon glyphicon-record";
 			}
-			else if(playingStatus.singleRoll)
+			else if(mode.repeat)
 			{
-				playingStatus.listRoll = true;
-				playingStatus.random = false;
-				playingStatus.singleRoll = false;
-				changeStatus.innerText = "列表循环";
+				mode.repeatAll = true;
+				mode.random = false;
+				mode.repeat = false;
+				changeMode.title = "列表循环";
+				changeMode.className = "glyphicon glyphicon-retweet";
 			}
 	});
 	target.on("pressProgress",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
