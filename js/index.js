@@ -154,9 +154,9 @@
 		{
 			switch(e.className)
 			{
-				case "glyphicon glyphicon-play" : bar.play();e.className = "glyphicon glyphicon-pause";
+				case "glyphicon glyphicon-play" : bar.play();e.className = "glyphicon glyphicon-pause";albumPic.classList.remove("paused");albumPic.classList.add("running");
 					break;
-				case "glyphicon glyphicon-pause" : bar.pause();e.className = "glyphicon glyphicon-play";
+				case "glyphicon glyphicon-pause" : bar.pause();e.className = "glyphicon glyphicon-play";albumPic.classList.remove("running");albumPic.classList.add("paused");
 					break;
 				case "glyphicon glyphicon-backward" : play(STATES.PREV);
 					break;

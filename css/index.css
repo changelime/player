@@ -15,6 +15,19 @@ body
 	from {transform: rotate(0deg);}
 	to {transform: rotate(360deg);}
 }
+.revolve
+{
+	-webkit-animation:myfirst 60s infinite; 
+	-webkit-animation-timing-function:linear;
+}
+.paused
+{
+	-webkit-animation-play-state:paused;
+}
+.running
+{
+	-webkit-animation-play-state:running;
+}
 #pic
 {
 	width: 512px;
@@ -55,8 +68,6 @@ body
 	border: solid 10px;
 	border-color: #1f1f1f;
 	border-radius: 50%;
-	-webkit-animation:myfirst 60s infinite; 
-	-webkit-animation-timing-function:linear;
 }
 #bottomBar
 {
