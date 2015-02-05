@@ -28,10 +28,6 @@
 		isload = false,
 		bg = null,
 		target = new Progressbar("#progress"),
-		resize = function(){
-			albumPic.style.top = (document.body.offsetHeight/2)-256+"px";
-			albumPic.style.left = (document.body.offsetWidth/2)-256+"px";
-		},
 		dropFiles = function (event)
 		{
 			var files = null,
@@ -121,8 +117,7 @@
 	            base64String += String.fromCharCode(image.data[i]);
 	        }
 		    albumPic.src = "data:" + image.format + ";base64," + window.btoa(base64String);
-		    albumPic.style.display = "initial";
-		    resize();
+		    albumPic.parentElement.style.display = "initial";
 		    stackBlurImage("albumPic", "canvas", 180, false );
 		    if(bg)
 		    	style.removeChild(bg);
@@ -139,7 +134,6 @@
 		});
 		isload = false;
 	}
-	document.body.onresize = resize;
 	document.body.addEventListener("dragenter",dropFiles);
 	document.body.addEventListener("dragover",dropFiles);
 	document.body.addEventListener("drop",dropFiles);
