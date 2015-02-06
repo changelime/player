@@ -83,6 +83,9 @@ body
 label
 {
 	color: #eeeeee;
+	font-family: "yahei-light";
+	font-variant: small-caps;
+	font-weight: 100;
 }
 
 #infoBox

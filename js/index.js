@@ -143,10 +143,6 @@
 		else
 			bar.volume = bar.volume-0.1 < 0 ? 0 : bar.volume-0.1;
 	});
-	document.body.addEventListener("dblclick",function(event){
-		event.preventDefault();
-		console.log("message");
-	});
 	control.addEventListener("click",function(event){//控制按钮
 		var e = event.target;
 		var localName = e.localName;
