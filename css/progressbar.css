@@ -5,11 +5,12 @@
 	background-color: rgba(255,255,255,0.2);
 	border:1px rgba(255,255,255,0) solid;
 	border-radius:25px;
+	-webkit-user-select: none;
 }
 .inside
 {
 	height: 8px;
-	width: 12px;
+	width: 0px;
 	background-color: #41a868;
 	border:1px rgba(255,255,255,0) solid;
 	border-radius:25px;
@@ -18,11 +19,11 @@
 {
 	height: 5px;
 	width: 5px;
-	border:7px #f1f1f4 solid;
-	border-radius:25px;
+	border: 7px #f1f1f4 solid;
+	border-radius: 50%;
 	position: relative;
-	top: -6px;
-	float: right;
+	top: -14px;
 	cursor: pointer;
 	box-sizing: initial;
+	background-color: #41a868;
 }

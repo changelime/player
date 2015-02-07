@@ -5,7 +5,7 @@
 		albumPic = document.getElementById("albumPic"),
 		time = document.getElementById("time"),
 		fraction = document.getElementById("fraction"),
-		bar = document.getElementById("bar"),
+		audio = document.getElementById("audio"),
 		control = document.getElementById("control"),
 		changeStatus = document.getElementById("changeStatus"),
 		canvas = document.getElementById("canvas"),
@@ -27,7 +27,7 @@
 		},
 		isload = false,
 		bg = null,
-		target = new Progressbar("#progress"),
+		progressbar = new Progressbar("#progress"),
 		dropFiles = function (event)
 		{
 			var files = null,
@@ -54,7 +54,7 @@
 					document.body.removeEventListener("dragover",dropFiles,false);
 					document.body.removeEventListener("drop",dropFiles,false);
 					dropFiles = null;
-					target.canDrag();
+					progressbar.unlock();
 					artist.className = "artist";
 					title.className = "title";
 					text.appendChild(title);
@@ -63,6 +63,7 @@
 				}
 			}
 		};
+	progressbar.lock();
 	style.type = "text/css";
 	head.appendChild(style);
 	function choise(state)
@@ -106,7 +107,7 @@
 			console.log("error");
 		};
 		reader.onload = function(){
-			bar.src = reader.result;
+			audio.src = reader.result;
 		};
 		ID3.loadTags(file.name, function() {//读取ID3信息
 			var tags = ID3.getAllTags(file.name),
@@ -139,9 +140,9 @@
 	document.body.addEventListener("drop",dropFiles);
 	document.body.addEventListener("mousewheel",function(event){
 		if(event.wheelDelta > 0)
-			bar.volume = bar.volume+0.1 > 1 ? 1 : bar.volume+0.1;
+			audio.volume = audio.volume+0.1 > 1 ? 1 : audio.volume+0.1;
 		else
-			bar.volume = bar.volume-0.1 < 0 ? 0 : bar.volume-0.1;
+			audio.volume = audio.volume-0.1 < 0 ? 0 : audio.volume-0.1;
 	});
 	control.addEventListener("click",function(event){//控制按钮
 		var e = event.target;
@@ -150,9 +151,9 @@
 		{
 			switch(e.className)
 			{
-				case "glyphicon glyphicon-play" : bar.play();e.className = "glyphicon glyphicon-pause";albumPic.classList.remove("paused");albumPic.classList.add("running");
+				case "glyphicon glyphicon-play" : audio.play();e.className = "glyphicon glyphicon-pause";albumPic.classList.remove("paused");albumPic.classList.add("running");
 					break;
-				case "glyphicon glyphicon-pause" : bar.pause();e.className = "glyphicon glyphicon-play";albumPic.classList.remove("running");albumPic.classList.add("paused");
+				case "glyphicon glyphicon-pause" : audio.pause();e.className = "glyphicon glyphicon-play";albumPic.classList.remove("running");albumPic.classList.add("paused");
 					break;
 				case "glyphicon glyphicon-backward" : play(STATES.PREV);
 					break;
@@ -162,10 +163,10 @@
 		}
 		
 	});
-	bar.addEventListener("canplay",function(event){//载入完成修改状态
+	audio.addEventListener("canplay",function(event){//载入完成修改状态
 	    isload = true;
 	});
-	bar.addEventListener("ended",function(event){//结束后播放下一曲
+	audio.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
 	});
 	changeMode.addEventListener("click",function(event){//改变播放模式，列表循环、随机播放、单曲循环
@@ -194,40 +195,36 @@
 				changeMode.className = "glyphicon glyphicon-retweet";
 			}
 	});
-	target.on("pressProgress",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
-		console.log("pressProgress");
-		bar.currentTime = target.getPastTime();
+	progressbar.on("pressBar",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
+		console.log("pressBar");
+		audio.currentTime = progressbar.getPosition() * audio.duration;
 		
 	});
-	/*target.on("draggingFlag",function(event){
+	/*progressbar.on("draggingFlag",function(event){
 		console.log("draggingFlag");
 	});*/
-	target.on("startDragging",function(event){//监听进度条的startDragging事件，拖动开始，更改拖动状态
-		console.log("startDragging");
+	progressbar.on("startDraggingFlag",function(event){//监听进度条的startDragging事件，拖动开始，更改拖动状态
+		console.log("startDraggingFlag");
 		pressProgress = true;
 		dragging = true;
 	});
 	
-	target.on("stopDragging",function(event){//监听进度条的stopDragging事件，拖动结束，更改拖动状态
-		console.log("stopDragging");
-		if(pressProgress && bar.currentTime != 0)
+	progressbar.on("stopDraggingFlag",function(event){//监听进度条的stopDragging事件，拖动结束，更改拖动状态
+		console.log("stopDraggingFlag");
+		if(pressProgress && audio.currentTime != 0)
 		{
-			bar.currentTime = target.getPastTime();
+			audio.currentTime = progressbar.getPosition() * audio.duration;
 			dragging = false;
 			pressProgress = false;
 		}
 	});
-	function setProgress()//循环获取播放时间并设置进度条位置
-	{
-		var whole = parseInt(bar.duration);
-		whole = isNaN(whole) ? 0 : whole;
-		var now = parseInt(bar.currentTime);
+	audio.addEventListener("timeupdate",function(e){
+		var duration = audio.duration;
+		var currentTime = audio.currentTime;
 		if(!dragging)
-			target.fire({time:whole, pastTime:now});
-		whole = parseInt(whole/60) + ":" + parseInt(whole%60);
-		now = parseInt(now/60) + ":" + parseInt(now%60);
-		time.innerText = now + " / " + whole;
-		setTimeout(arguments.callee,500);
-	}
-	setProgress();
+			progressbar.setPosition( currentTime/duration );
+		duration = parseInt(duration/60) + ":" + parseInt(duration%60);
+		currentTime = parseInt(currentTime/60) + ":" + parseInt(currentTime%60);
+		time.innerText = currentTime + " / " + duration;
+	});
 }())

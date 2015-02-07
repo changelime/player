@@ -6,72 +6,74 @@
 		this.flag = document.createElement("div");
 		this.inside.className = "inside";
 		this.flag.className = "flag";
-		this.inside.appendChild(this.flag);
 		this.target.appendChild(this.inside);
-		this.bar = {
-			target : this.target,
-			inside : this.inside,
-			dragging : null,
-			canDrag : false,
-			time : 0,
-			width : this.target.offsetWidth,
-			past : 12,
-			pastTime : 0,
-			per : 0
-		};
+		this.target.appendChild(this.flag);
+		this._fragtion = 0;//进度条比例0~1
+		this._pressFlag = false;
+		this._lock = false;
+		this._addEventListener();
+	}
+	Progressbar.prototype = new EventTarget();
+	Progressbar.prototype._addEventListener = function(){
 		var that = this;
-
-		this.target.addEventListener("mousedown",function(event){
-			var insideWith = event.clientX-12;
-			if(!event.clientX == 0 && insideWith < that.bar.target.offsetWidth && that.bar.canDrag)
-			{
-				that.bar.inside.style.width = insideWith + "px";
-				that.bar.past = insideWith;
-				that.bar.pastTime = (that.bar.past/that.bar.target.offsetWidth)*that.bar.time;
-				that.emit({type:"pressProgress",message:event});
-			}
+		this.target.addEventListener("mousedown",function(event){//在进度条上点击
+			that._setPosition(event);
+			that.emit({type:"pressBar",message:event});
 		},true);
 		this.flag.addEventListener("mousedown",function(event){
-			if(that.bar.canDrag)
+			if( !that._pressFlag )
 			{
-				that.bar.dragging = event.target;
-				that.emit({type:"startDragging",message:event});
-			}
+				that._pressFlag = true;
+				that.emit({type:"startDraggingFlag",message:event});
+			}	
 		},false);
 		document.addEventListener("mousemove",function(event){
-			if(that.bar.dragging !== null && that.bar.canDrag)
+			if(that._pressFlag)
 			{
-				var insideWith = event.clientX-12;
-				if(!event.clientX == 0 && insideWith < that.bar.target.offsetWidth )
-				{
-					that.bar.inside.style.width = insideWith + "px";
-					that.bar.past = insideWith;
-					that.bar.pastTime = (that.bar.past/that.bar.target.offsetWidth)*that.bar.time;
-				}
+				that._setPosition(event);
 				that.emit({type:"draggingFlag",message:event});
 			}
 		},false);
 		document.addEventListener("mouseup",function(event){
-			if(that.bar.canDrag)
+			if(that._pressFlag)
 			{
-				that.bar.dragging = null;
-				that.emit({type:"stopDragging",message:event});
-			}	
+				that._pressFlag = false;
+				that.emit({type:"stopDraggingFlag",message:event});
+			}
 		},false);
-	}
-	Progressbar.prototype = new EventTarget();
-	Progressbar.prototype.fire = function(progress){
-		this.bar.per = (this.bar.width/progress.time);
-		this.bar.time = progress.time;
-		this.bar.past = (progress.pastTime*this.bar.per) + this.bar.per;
-		if(this.bar.past > 12)
-			this.inside.style.width = this.bar.past + "px";
 	};
-	Progressbar.prototype.canDrag = function(){
-		this.bar.canDrag = true;
+	Progressbar.prototype._setPosition = function(event,fragtion){
+		if(this._lock)
+			return;
+		var width = this.target.offsetWidth;
+		if(fragtion)
+		{
+			var offleft = 6/width;
+			this.inside.style.width = (fragtion * 100) + "%";
+			this.flag.style.left = ( (fragtion - offleft) * 100) + "%";
+			this._fragtion = fragtion;
+			return;
+		}
+		var position = event.clientX - this.target.offsetLeft;
+		if( position <= 0 || position > width)
+			return;
+		this._fragtion = position / width;
+		this.inside.style.width = (this._fragtion * 100) + "%";
+		this.flag.style.left = ( ( (position-6) / width ) * 100) + "%";
+		console.log(this._fragtion,position);
 	};
-	Progressbar.prototype.getPastTime = function(){
-		return this.bar.pastTime;
+	Progressbar.prototype.setPosition = function(fragtion){
+		if(fragtion <= 1 && fragtion >= 0)
+			this._setPosition(null,fragtion);
+	};
+	Progressbar.prototype.lock = function(){
+		this._lock = true;
+	};
+	Progressbar.prototype.unlock = function(){
+		this._lock = false;
+	};
+	Progressbar.prototype.getPosition = function(){
+		return this._fragtion;
 	};
 	window.Progressbar = Progressbar;
 }())
