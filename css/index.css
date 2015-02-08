@@ -10,6 +10,13 @@ body
 	height: 100%;
 	-webkit-user-select: none;
 }
+#spectrum
+{
+	position: absolute;
+	left: 0;
+	bottom: 130px;
+	z-index: -1;
+}
 @-webkit-keyframes myfirst
 {
 	from {transform: rotate(0deg);}
