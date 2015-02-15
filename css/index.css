@@ -1,3 +1,6 @@
+::-webkit-scrollbar-track-piece{background-color:transparent;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:#eeeeee;}
 html
 {
 	height: 100%;
@@ -9,6 +12,73 @@ body
 	background-size: 100% 100%;
 	height: 100%;
 	-webkit-user-select: none;
+}
+#left
+{
+	width: 360px;
+	height: 100%;
+	background-color: #41A868;
+	position: absolute;
+	top: 0;
+	left: -360px;
+	z-index: 2;
+	overflow: hidden;
+}
+#left:hover
+{
+	overflow:auto;
+}
+#left ul
+{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+#left ul li label
+{
+	width: 100%;
+	font-size: 40px;
+	text-align: center;
+}
+.item:hover
+{
+	background-color: #333;
+	cursor: pointer;
+}
+#left ul li ol
+{
+	margin: 0px;
+}
+#left ul li ol li
+{
+	font-size: 15px;
+	color: #fff;
+	text-align: left;
+	margin: 5px 10px;
+	border: transparent 1px solid;
+	border-left: transparent 10px solid;
+	border-right: transparent 10px solid;
+	cursor: pointer;
+}
+#left ul li ol li:hover
+{
+	border-right: #ffffff 10px solid;
+}
+#left ul li ul li
+{
+	font-size: 15px;
+	color: #fff;
+	text-align: center;
+	margin: 5px 10px;
+}
+.playing
+{
+	background-color: #999;
+}
+.half
+{
+	width: 50% !important;
+	font-size: 20px !important;
 }
 #spectrum
 {

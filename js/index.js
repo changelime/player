@@ -1,6 +1,5 @@
 (function(){
-	var music = [],
-		text = document.getElementById("text"),
+	var text = document.getElementById("text"),
 		info = document.getElementById("info"),
 		albumPic = document.getElementById("albumPic"),
 		time = document.getElementById("time"),
@@ -13,6 +12,7 @@
 		head = document.getElementsByTagName("head")[0],
 		artist = document.createElement("label"),
 		title = document.createElement("label"),
+		color = document.getElementById("color"),
 		dragging = false,
 		pressProgress = false,
 		playing = 0,
@@ -20,23 +20,41 @@
 			NEXT:"NEXT",
 			PREV:"PREV"
 		},
-		mode = {
-			random : false,
-			repeat : false,
-			repeatAll : true,
-		},
 		isload = false,
 		bg = null,
 		progressbar = new Progressbar("#progress"),
 		audioContext = null,
 		sourceNode = null,
-		analyser = null,
-		dropFiles = function (event)
+		analyser = null;
+
+	var loadMusic = function(){
+		if(isload)
+			return;
+		audioContext = new AudioContext();
+		sourceNode = audioContext.createMediaElementSource(audio);
+		analyser = audioContext.createAnalyser();//创建分析器
+		sourceNode.connect(analyser);
+		analyser.connect(audioContext.destination);
+		isload = true;
+		play();
+		progressbar.unlock();
+		artist.className = "artist";
+		title.className = "title";
+		text.appendChild(title);
+		text.appendChild(document.createElement("br"));
+		text.appendChild(artist);
+	};
+	var dropFiles = null;
+	var ctrl = load(function(){
+		console.log("load",ctrl);
+		if(ctrl.music.getLength() > 0)
 		{
+			loadMusic();
+		}
+		dropFiles = function (event){
 			var files = null,
 				i = 0,
 				len = 0;
-
 			event.preventDefault();
 			if(event.type == "drop" && event.dataTransfer.files.length)
 			{
@@ -46,31 +64,28 @@
 				while( len > i )
 				{
 					if( files[i].type == "audio/mp3" )
-						music.push(files[i]);
+					{
+						ctrl.music.add(files[i],function(){
+							if(!isload)
+							{
+								loadMusic();
+								isload = true;
+							}
+								
+						});
+					}
 					i++;
-				}
-				if (music.length)
-				{
-					audioContext = new AudioContext();
-					sourceNode = audioContext.createMediaElementSource(audio);
-					analyser = audioContext.createAnalyser();//创建分析器
-					sourceNode.connect(analyser);
-					analyser.connect(audioContext.destination);
-					isload = true;
-					play();
-					document.body.removeEventListener("dragenter",dropFiles,false);
-					document.body.removeEventListener("dragover",dropFiles,false);
-					document.body.removeEventListener("drop",dropFiles,false);
-					dropFiles = null;
-					progressbar.unlock();
-					artist.className = "artist";
-					title.className = "title";
-					text.appendChild(title);
-					text.appendChild(document.createElement("br"));
-					text.appendChild(artist);
 				}
 			}
 		};
+		document.body.addEventListener("dragenter",dropFiles);
+		document.body.addEventListener("dragover",dropFiles);
+		document.body.addEventListener("drop",dropFiles);
+		addListeners(document.getElementById("list").children,function(){
+			play(this.innerText);
+		});
+	});
+
 	var spectrum = document.getElementById('spectrum');
     var cwidth = spectrum.offsetWidth;
     var cheight = spectrum.offsetHeight - 2;
@@ -82,7 +97,6 @@
     var capYPositionArray = []; //将上一画面各帽头的位置保存到这个数组
     var ctx = spectrum.getContext('2d');
     var id = 0;
-	var fillStyle = "#41A868"
 	var drawMeter = function() {
         var array = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(array);
@@ -102,11 +116,11 @@
                 capYPositionArray[i] = value;
             };
             //开始绘制频谱条
-            ctx.fillStyle = fillStyle;
+            ctx.fillStyle = ctrl.setting.getThemeColor();
             ctx.fillRect(i * (meterWidth + gap), cheight - value + capHeight, meterWidth, cheight);
         }
         id = requestAnimationFrame(drawMeter);
-        console.log(id);
+        // console.log(id);
     };
     var resize = function(){
     	var width = document.createAttribute("width");
@@ -123,35 +137,50 @@
 	head.appendChild(style);
 	function choise(state)
 	{
+		console.log(ctrl);
+		var setting = ctrl.setting;
+		var music = ctrl.music;
 		var file = null;
-		var index = playing;
+		var index = setting.getPlaying();
+		var playing = setting.getPlaying();
+		var length = music.getLength();
+		if( state!==STATES.NEXT && state!==STATES.PREV && typeof state == "string")
+		{
+			var temp = music.getByName(state);
+			file = temp.value;
+			setting.setPlaying(temp.index);
+			return file;
+		}
 		switch(state)
 		{
-			case STATES.NEXT : playing = (playing+1) % music.length;
+			case STATES.NEXT : playing = (playing+1) % length;
 				break;
-			case STATES.PREV : playing = !playing ? music.length-1 : (playing-1) % music.length;
+			case STATES.PREV : playing = !playing ? length-1 : (playing-1) % length;
 				break;
 		}
-		if(mode.random)
+		setting.setPlaying(playing);
+		switch(setting.getMode())
 		{
-			var pickOne = music.pickOne();//随机选取数组中的一个元素
-			file = pickOne.value;
-			playing = pickOne.index;
-		}
-		else if(mode.repeat)
-		{
-			playing = index;
-			file = music[playing];
-		}
-		else if(mode.repeatAll)
-		{
-			file = music[playing];
+			case "random" : 
+				var temp = music.getByRandom();
+				file = temp.value;
+				setting.setPlaying(temp.index);
+				break;
+			case "repeat" : 
+				setting.setPlaying(index);
+				file = music.getByIndex(index);
+				break;
+			case "repeatAll" : 
+				file = music.getByIndex(playing);
+				break;
 		}
 		return file;
 	}
 	function play(state)
 	{
 		var file = choise(state);
+		playingItemInList();
+		console.log(file);
 		reader = new FileReader();
 		reader.readAsDataURL(file);
 		info.innerText = "载入中...";
@@ -181,7 +210,6 @@
 		    info.innerText = "";
 		    title.innerText = tags.title;
 		    artist.innerText = tags.artist;
-		    fraction.innerText = (playing+1) + " / " + music.length;
 		}, 
 		{
 			tags: ["artist", "title", "album", "year", "comment", "track", "genre", "lyrics", "picture"],
@@ -190,14 +218,19 @@
 		isload = false;
 	}
 	window.addEventListener("resize",resize);
-	document.body.addEventListener("dragenter",dropFiles);
-	document.body.addEventListener("dragover",dropFiles);
-	document.body.addEventListener("drop",dropFiles);
 	document.body.addEventListener("mousewheel",function(event){
+		if(event.clientX <= 360)
+			return;
 		if(event.wheelDelta > 0)
 			audio.volume = audio.volume+0.1 > 1 ? 1 : audio.volume+0.1;
 		else
 			audio.volume = audio.volume-0.1 < 0 ? 0 : audio.volume-0.1;
+	});
+	color.addEventListener("change",function(){
+		var setting = ctrl.setting;
+		var music = ctrl.music;
+		console.log(this.value);
+		setting.setThemeColor(this.value);
 	});
 	control.addEventListener("click",function(event){//控制按钮
 		var e = event.target;
@@ -234,30 +267,13 @@
 		play(STATES.NEXT);
 	});
 	changeMode.addEventListener("click",function(event){//改变播放模式，列表循环、随机播放、单曲循环
-			if(mode.repeatAll)
-			{
-				mode.repeatAll = false;
-				mode.random = true;
-				mode.repeat = false;
-				changeMode.title = "随机播放";
-				changeMode.className = "glyphicon glyphicon-random";
+			console.log(this.title);
+			var index = {
+				"列表循环" : "repeatAll",
+				"随机播放" : "random",
+				"单曲循环" : "repeat"
 			}
-			else if(mode.random)
-			{
-				mode.repeatAll = false;
-				mode.random = false;
-				mode.repeat = true;
-				changeMode.title = "单曲循环";
-				changeMode.className = "glyphicon glyphicon-record";
-			}
-			else if(mode.repeat)
-			{
-				mode.repeatAll = true;
-				mode.random = false;
-				mode.repeat = false;
-				changeMode.title = "列表循环";
-				changeMode.className = "glyphicon glyphicon-retweet";
-			}
+			setMode(index[this.title]);
 	});
 	progressbar.on("pressBar",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
 		console.log("pressBar");
@@ -283,6 +299,8 @@
 		}
 	});
 	audio.addEventListener("timeupdate",function(e){
+		var setting = ctrl.setting;
+		var music = ctrl.music;
 		var duration = audio.duration;
 		var currentTime = audio.currentTime;
 		if(!dragging)
@@ -290,5 +308,6 @@
 		duration = parseInt(duration/60) + ":" + parseInt(duration%60);
 		currentTime = parseInt(currentTime/60) + ":" + parseInt(currentTime%60);
 		time.innerText = currentTime + " / " + duration;
+		fraction.innerText = setting.getPlaying()+1 + " / " + music.getLength();
 	});
 }())

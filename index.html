@@ -9,6 +9,20 @@
 	</head>
 	<body class="bg">
 		<div class="container-fluid">
+			<div id="left">
+				<ul>
+					<li>
+						<label class="item">列表</label>
+						<ol id="list" class="hide"></ol>
+					</li>
+					<li>
+						<label class="item">设置</label>
+						<ul id="setting" class="hide">
+							<li><label class="half">主题颜色</label><input id="color" class="half" type="color" /></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
 			<div id="main" class="row text-center">
 				<div id="text">
 					<label id="info">
@@ -43,11 +57,8 @@
 		</div>
 		<canvas style="display:none;" id="canvas"></canvas>
 		<audio id="audio" autoplay="autoplay" src=""></audio>
-		<script src="js/event.js"></script>
-		<script src="js/array.js"></script>
-		<script src="js/progressbar.js"></script>
-		<script src="js/id3-minimized.js"></script>
-		<script src="js/StackBlur.js"></script>
-		<script src="js/index.js"></script>
+		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
+		<script src="http://spnews.qiniudn.com/StackBlur.js"></script>
+		<script src="js/player.min.js"></script>
 	</body>
 </html>
