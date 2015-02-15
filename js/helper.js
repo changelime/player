@@ -15,7 +15,8 @@
 		for(var i = 0; i < list.length; i++)
 			list[i].className = "";
 		console.log(getPlaying());
-		list[getPlaying()].className = "playing";
+		if( list.length >0 )
+			list[getPlaying()].className = "playing";
 	};
 	var printList = function(list){
 		listDom = document.getElementById("list");
