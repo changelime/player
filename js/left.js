@@ -32,7 +32,6 @@
 	document.body.addEventListener("mousemove",function(event){
 		if(event.clientX <= 30 && !isShow)
 		{
-			console.log(event.clientX);
 			requestAnimationFrame(show);
 		}
 	});

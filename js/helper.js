@@ -1,12 +1,23 @@
 (function(){
+	var hexToRGBA = function(color,A){
+		var cutHex = function(){
+			return (color.charAt(0)=="#") ? color.substring(1,7):color;
+		};
+		var R = parseInt((cutHex()).substring(0,2),16);
+		var G = parseInt((cutHex()).substring(2,4),16);
+		var B = parseInt((cutHex()).substring(4,6),16);
+		return "rgba("+R+","+G+","+B+","+A+")";
+	};
 	var printThemeColor = function(setting){
 		var inside = document.getElementsByClassName("inside")[0];
 		var flag = document.getElementsByClassName("flag")[0];
 		var left = document.getElementById("left");
 		var color = document.getElementById("color");
+		var bottomBar = document.getElementById("bottomBar");
 		inside.style.backgroundColor = setting.themeColor;
 		flag.style.backgroundColor = setting.themeColor;
-		left.style.backgroundColor = setting.themeColor;
+		left.style.backgroundColor = hexToRGBA(setting.themeColor,0.3);
+		bottomBar.style.backgroundColor = hexToRGBA(setting.themeColor,0.4);
 		color.value = setting.themeColor;
 	};
 	var getPlaying = null;
@@ -157,8 +168,8 @@
 				{
 					db.setting.add(_setting,function(err, result){
 						printThemeColor(_setting);
-						done();
 						console.log("初始化设置",result);
+						done();
 					});
 				}
 				else
@@ -199,7 +210,7 @@
 				music.getLength = function(){
 					return music.files.length;
 				};
-				music.add = function(file,callback){
+				music.add = function(file, callback){
 					db.files.get(file.name, function(err, result){
 						if(err)
 						{
@@ -212,28 +223,55 @@
 							});
 						}
 						else
-							console.log("already has")
+							console.log("already has");
 					});
 				};
-				music.removeByIndex = function(index){
+				music.addAll = function(files, callback){
+					var count = files.length;
+					var done = function(){
+						if(--count == 0)
+							callback();
+					};
+					files.forEach(function(item, index){
+						db.files.get(item.name, function(err, result){
+							if(err)
+							{
+								db.files.add(item, function(err, result){
+									music.files.push(item);
+									music.filesIndex[item.name] = music.files.length-1;
+									printList(music.files);
+									done();
+									console.log("add success",music.files.length);
+								});
+							}
+							else
+								console.log("already has")
+						});
+					});
+				};
+				music.removeByIndex = function(index, callback){
 					db.files.delete(music.files[index].name, function(err, result){
 						if(!err)
 						{
-							delete music.filesIndex[ music.files[index].name ];
+							var name = music.files[index].name;
+							delete music.filesIndex[ name ];
 							music.files.splice(index, 1);
 							printList(music.files);
+							callback(index,name);
 							console.log("remove success");
 						}
 							
 					});
 				};
-				music.removeByName = function(name){
+				music.removeByName = function(name, callback){
 					db.files.delete(name, function(err, result){
 						if(!err)
 						{
-							music.files.splice(music.filesIndex[name], 1);
+							var index = music.filesIndex[name];
+							music.files.splice(index, 1);
 							delete music.filesIndex[name];
 							printList(music.files);
+							callback(index, name);
 							console.log("remove success");
 						}
 							

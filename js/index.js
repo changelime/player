@@ -13,6 +13,7 @@
 		artist = document.createElement("label"),
 		title = document.createElement("label"),
 		color = document.getElementById("color"),
+		list = document.getElementById("list"),
 		dragging = false,
 		pressProgress = false,
 		playing = 0,
@@ -43,6 +44,9 @@
 		text.appendChild(title);
 		text.appendChild(document.createElement("br"));
 		text.appendChild(artist);
+		/*addListeners(document.getElementById("list").children,function(){
+			play(this.innerText);
+		});*/
 	};
 	var dropFiles = null;
 	var ctrl = load(function(){
@@ -61,29 +65,25 @@
 
 				files = event.dataTransfer.files;
 				len = files.length;
+				var items = [];
 				while( len > i )
 				{
 					if( files[i].type == "audio/mp3" )
 					{
-						ctrl.music.add(files[i],function(){
-							if(!isload)
-							{
-								loadMusic();
-								isload = true;
-							}
-								
-						});
+						items.push(files[i]);
 					}
 					i++;
 				}
+				ctrl.music.addAll(items, function(){
+					if( items.length && items.length == ctrl.music.getLength() )
+						loadMusic();
+					console.log(ctrl.music.getLength());
+				});
 			}
 		};
 		document.body.addEventListener("dragenter",dropFiles);
 		document.body.addEventListener("dragover",dropFiles);
 		document.body.addEventListener("drop",dropFiles);
-		addListeners(document.getElementById("list").children,function(){
-			play(this.innerText);
-		});
 	});
 
 	var spectrum = document.getElementById('spectrum');
@@ -188,6 +188,11 @@
 		artist.innerText = "";
 		reader.onerror = function(){
 			console.log("error");
+			var index = ctrl.setting.getPlaying();
+			ctrl.music.removeByIndex(index, function(){
+				isload = true;
+				play(STATES.NEXT);
+			});
 		};
 		reader.onload = function(){
 			audio.src = reader.result;
@@ -229,7 +234,6 @@
 	color.addEventListener("change",function(){
 		var setting = ctrl.setting;
 		var music = ctrl.music;
-		console.log(this.value);
 		setting.setThemeColor(this.value);
 	});
 	control.addEventListener("click",function(event){//控制按钮
@@ -249,7 +253,15 @@
 					break;
 			}
 		}
-		
+	});
+	list.addEventListener("click",function(event){
+		var e = event.target;
+		var localName = e.localName;
+		if(localName == "li" && isload)
+		{
+			console.log(localName,e.innerText);
+			play(e.innerText);
+		}
 	});
 	audio.addEventListener('play', function(){
         id = requestAnimationFrame(drawMeter);
@@ -262,12 +274,17 @@
     });
 	audio.addEventListener("canplay",function(event){//载入完成修改状态
 	    isload = true;
+	    if( control.children[1].className == "glyphicon glyphicon-play" )
+	    {
+	    	control.children[1].className = "glyphicon glyphicon-pause";
+	    	albumPic.classList.remove("paused");
+	    	albumPic.classList.add("running");
+	    }
 	});
 	audio.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
 	});
 	changeMode.addEventListener("click",function(event){//改变播放模式，列表循环、随机播放、单曲循环
-			console.log(this.title);
 			var index = {
 				"列表循环" : "repeatAll",
 				"随机播放" : "random",

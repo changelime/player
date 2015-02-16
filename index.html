@@ -28,8 +28,11 @@
 					<label id="info">
 						一个音乐播放器<br>
 						仅支持在chrome浏览器下播放MP3格式的音乐<br>
-						为了保证完整的体验，请使用包含ID3的MP3音乐<br>
+						为了保证完整的体验，请使用包含ID3（自带封面）的MP3音乐<br>
 						把音乐拖放到浏览器窗口，可批量拖放<br>
+						拖放后浏览器会记忆播放列表，再次打开网页会继续播放，不用再次拖放<br>
+						需要再次增加音乐，继续拖放即可<br>
+						鼠标移至左侧会展开播放列表和设置选项<br>
 						鼠标滚轮调整音量<br>
 					</label><br>
 				</div>
@@ -59,6 +62,12 @@
 		<audio id="audio" autoplay="autoplay" src=""></audio>
 		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
 		<script src="http://spnews.qiniudn.com/StackBlur.js"></script>
-		<script src="js/player.min.js"></script>
+		<!--script src="js/player.min.js"></script-->
+		<script src="js/event.js"></script>
+		<script src="js/progressbar.js"></script>
+		<script src="js/indexing.js"></script>
+		<script src="js/helper.js"></script>
+		<script src="js/left.js"></script>
+		<script src="js/index.js"></script>
 	</body>
 </html>
