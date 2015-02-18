@@ -295,9 +295,18 @@
 					db.files.delete(name, function(err, result){
 						if(!err)
 						{
+							var playing = music.files[_setting.playing].name;
+
 							var index = music.filesIndex[name];
 							music.files.splice(index, 1);
-							delete music.filesIndex[name];
+							//delete music.filesIndex[name];
+							music.filesIndex = {};
+							for(var i = 0;i<music.files.length;i++)
+							{
+								music.filesIndex[ music.files[i].name ] = i;
+								if(playing == music.files[i].name)
+									setting.setPlaying(i);
+							}
 							printList(music.files);
 							callback(index, name);
 							console.log("remove success");

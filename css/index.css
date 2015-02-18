@@ -13,6 +13,27 @@ body
 	height: 100%;
 	-webkit-user-select: none;
 }
+#menu
+{
+	list-style-type: none;
+	margin: 0;
+	padding: 2px 2px;
+	position: absolute;
+	visibility: hidden;
+	z-index:3;
+	background-color: #000;
+	color:#fff;
+}
+#menu li
+{
+	padding: 10px 5px;
+	font-size: 15px;
+}
+#menu li:hover
+{
+	background-color: #41A868;
+	cursor: pointer;
+}
 #left
 {
 	width: 360px;

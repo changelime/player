@@ -274,6 +274,36 @@
 			play(e.innerText);
 		}
 	});
+	var songName = "";
+	list.addEventListener("contextmenu", function(event)
+	{
+		event.preventDefault();
+		var menu = document.getElementById("menu");
+		menu.style.left = event.clientX + "px";
+		menu.style.top = event.clientY-15 + "px";
+		menu.style.visibility = "visible";
+		var e = event.target;
+		var localName = e.localName;
+		songName = e.innerText;
+	});
+	var menu = document.getElementById("menu");
+	menu.firstElementChild.addEventListener("click", function(event)
+	{
+		console.log(songName,"播放");
+		play(songName);
+	});
+	menu.firstElementChild.nextElementSibling.addEventListener("click", function(event)
+	{
+		console.log(songName,"删除");
+		ctrl.music.removeByName(songName,function(index, name){
+			console.log(index, name, "remove success");
+		});
+	});
+	document.body.addEventListener("click", function(event)
+	{
+		var menu = document.getElementById("menu");
+		menu.style.visibility = "hidden";
+	});
 	audio.addEventListener('play', function(){
         id = requestAnimationFrame(drawMeter);
     });
