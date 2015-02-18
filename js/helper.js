@@ -1,4 +1,38 @@
 (function(){
+	var print = function(element,count,size){
+		lineNum = 4;
+		var getColor = function(){
+			return "#"+(~~(Math.random()*(1<<24))).toString(16);
+		};
+		var canvas = element;
+		var context = canvas.getContext("2d");
+		var drawPath = function(x, y, r)
+		{
+			var i,ang;
+			ang = Math.PI*2/lineNum 
+			context.save();
+			context.fillStyle = getColor();
+			context.translate(x, y);
+			context.moveTo(0, -r);
+			context.beginPath();
+			for(i = 0;i < lineNum; i ++)
+			{
+				context.rotate(ang)
+				context.lineTo(0, -r);
+			}
+			context.closePath();
+			context.fill();
+			context.restore();
+		}
+		var step = size/count;
+		for(var i = 0;i<count+1; i++)
+		{
+			for(var j = 0; j<count+1; j++)
+			{
+				drawPath( i*step, j*step, step);
+			}
+		}
+	};
 	var hexToRGBA = function(color,A){
 		var cutHex = function(){
 			return (color.charAt(0)=="#") ? color.substring(1,7):color;
@@ -39,12 +73,6 @@
 			listDom.appendChild(li);
 		}
 		playingItemInList();
-	};
-	var addListeners = function(elements, callback){
-		for(var i = 0; i<elements.length; i++)
-		{
-			elements[i].addEventListener("click",callback);
-		}
 	};
 	var saveMode = null;
 	var setMode = function(mode,load){
@@ -289,5 +317,5 @@
 	window.load = load;
 	window.setMode = setMode;
 	window.playingItemInList = playingItemInList;
-	window.addListeners = addListeners;
+	window.print = print;
 }())

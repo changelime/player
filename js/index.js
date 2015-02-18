@@ -201,11 +201,22 @@
 			var tags = ID3.getAllTags(file.name),
 			image = tags.picture,
 			base64String = "";
-			for (var i = 0; i < image.data.length; i++)
-	        {
-	            base64String += String.fromCharCode(image.data[i]);
-	        }
-		    albumPic.src = "data:" + image.format + ";base64," + window.btoa(base64String);
+			if(image && image.data)
+			{
+				for (var i = 0; i < image.data.length; i++)
+		        {
+		            base64String += String.fromCharCode(image.data[i]);
+		        }
+			    albumPic.src = "data:" + image.format + ";base64," + window.btoa(base64String);
+			}
+			else
+			{
+				image = document.createElement("canvas");
+				image.width = 512;
+				image.height = 512;
+				print(image,10,512);
+				albumPic.src = image.toDataURL();
+			}
 		    albumPic.parentElement.style.display = "initial";
 		    stackBlurImage("albumPic", "canvas", 180, false );
 		    if(bg)
