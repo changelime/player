@@ -235,6 +235,8 @@
 	}
 	window.addEventListener("resize",resize);
 	document.body.addEventListener("mousewheel",function(event){
+		contextmenuList(null,true);
+		menu.style.visibility = "hidden";
 		if(event.clientX <= 360)
 			return;
 		if(event.wheelDelta > 0)
@@ -275,34 +277,51 @@
 		}
 	});
 	var songName = "";
+	var contextmenuList = function(selected,clean){
+		list = document.getElementById("list").childNodes;
+		for(var i = 0; i < list.length; i++)
+			list[i].classList.remove("contextmenu");
+		if(!clean)
+			selected.classList.add("contextmenu");
+	};
 	list.addEventListener("contextmenu", function(event)
 	{
 		event.preventDefault();
-		var menu = document.getElementById("menu");
-		menu.style.left = event.clientX + "px";
-		menu.style.top = event.clientY-15 + "px";
-		menu.style.visibility = "visible";
-		var e = event.target;
-		var localName = e.localName;
-		songName = e.innerText;
+		if(event.target.localName == "li")
+		{
+			var menu = document.getElementById("menu");
+			menu.style.left = event.clientX + "px";			
+			if( document.body.offsetHeight - event.clientY > 86)
+				menu.style.top = event.clientY + "px";
+			else
+				menu.style.top = event.clientY - 86 + "px";
+			menu.style.visibility = "visible";
+			contextmenuList(null,true);
+			songName = event.target.innerText;
+			contextmenuList(event.target,false);
+		}
+		
 	});
 	var menu = document.getElementById("menu");
 	menu.firstElementChild.addEventListener("click", function(event)
 	{
 		console.log(songName,"播放");
 		play(songName);
+		contextmenuList(null,true);
 	});
 	menu.firstElementChild.nextElementSibling.addEventListener("click", function(event)
 	{
 		console.log(songName,"删除");
 		ctrl.music.removeByName(songName,function(index, name){
 			console.log(index, name, "remove success");
+			contextmenuList(null,true);
 		});
 	});
 	document.body.addEventListener("click", function(event)
 	{
 		var menu = document.getElementById("menu");
 		menu.style.visibility = "hidden";
+		contextmenuList(null,true);
 	});
 	audio.addEventListener('play', function(){
         id = requestAnimationFrame(drawMeter);

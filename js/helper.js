@@ -222,7 +222,6 @@
 					return music.files[index];
 				};
 				music.getByName = function(name){
-					// return music.files[ music.filesIndex[name] ];
 					return {
 						value : music.files[ music.filesIndex[name] ],
 						index : music.filesIndex[name]
@@ -298,16 +297,15 @@
 							var playing = music.files[_setting.playing].name;
 
 							var index = music.filesIndex[name];
-							music.files.splice(index, 1);
-							//delete music.filesIndex[name];
-							music.filesIndex = {};
+							music.files.splice(index, 1);//从数组中删除
+							music.filesIndex = {};//从建索引
 							for(var i = 0;i<music.files.length;i++)
 							{
 								music.filesIndex[ music.files[i].name ] = i;
 								if(playing == music.files[i].name)
 									setting.setPlaying(i);
 							}
-							printList(music.files);
+							printList(music.files);//重绘播放列表
 							callback(index, name);
 							console.log("remove success");
 						}
