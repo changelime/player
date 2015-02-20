@@ -42,12 +42,22 @@
 		var B = parseInt((cutHex()).substring(4,6),16);
 		return "rgba("+R+","+G+","+B+","+A+")";
 	};
+	var contextmenuStyle = null;
+	var head = document.getElementsByTagName("head")[0];
+	var style = document.createElement("style");
+	style.type = "text/css";
+	head.appendChild(style);
 	var printThemeColor = function(setting){
 		var inside = document.getElementsByClassName("inside")[0];
 		var flag = document.getElementsByClassName("flag")[0];
 		var left = document.getElementById("left");
 		var color = document.getElementById("color");
 		var bottomBar = document.getElementById("bottomBar");
+		if(contextmenuStyle)
+	    	style.removeChild(contextmenuStyle);
+	    contextmenuStyle = document.createTextNode('#menu li:hover{background-color: '+setting.themeColor+';cursor: pointer;}.contextmenu{background-color: '+setting.themeColor+';}');
+	    style.appendChild(contextmenuStyle);
+
 		inside.style.backgroundColor = setting.themeColor;
 		flag.style.backgroundColor = setting.themeColor;
 		left.style.backgroundColor = hexToRGBA(setting.themeColor,0.3);

@@ -21,7 +21,7 @@ body
 	position: absolute;
 	visibility: hidden;
 	z-index:3;
-	background-color: #000;
+	background-color: #2d2d2d;
 	color:#fff;
 }
 #menu li
@@ -33,6 +33,10 @@ body
 {
 	background-color: #41A868;
 	cursor: pointer;
+}
+.contextmenu
+{
+	background-color: #41A868;
 }
 #left
 {
@@ -94,12 +98,9 @@ body
 }
 .playing
 {
-	background-color: #999;
+	background-color: #2d2d2d;
 }
-.contextmenu
-{
-	background-color: #41A868;
-}
+
 .half
 {
 	width: 50% !important;
