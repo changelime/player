@@ -237,7 +237,7 @@
 	document.body.addEventListener("mousewheel",function(event){
 		contextmenuList(null,true);
 		menu.style.visibility = "hidden";
-		if(event.clientX <= 360)
+		if(event.clientX <= 360 || (event.target.localName == "ul" || event.target.localName == "li"))
 			return;
 		if(event.wheelDelta > 0)
 			audio.volume = audio.volume+0.1 > 1 ? 1 : audio.volume+0.1;
@@ -374,6 +374,17 @@
 			dragging = false;
 			pressProgress = false;
 		}
+	});
+	var printSearchBox = new PrintSearchBox();
+	printSearchBox.on("mousedown",function(event){
+		console.log(event.message.innerText);
+		var fileName = event.message.innerText;
+		play(fileName);
+	});
+	printSearchBox.on("pressEnter",function(event){
+		console.log(event.message.innerText);
+		var fileName = event.message.innerText;
+		play(fileName);
 	});
 	audio.addEventListener("timeupdate",function(e){
 		var setting = ctrl.setting;

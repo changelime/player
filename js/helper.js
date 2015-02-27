@@ -53,6 +53,8 @@
 		var left = document.getElementById("left");
 		var color = document.getElementById("color");
 		var bottomBar = document.getElementById("bottomBar");
+		var searchMain = document.getElementById("searchMain");
+		var suggest = document.getElementById("suggest");
 		if(contextmenuStyle)
 	    	style.removeChild(contextmenuStyle);
 	    contextmenuStyle = document.createTextNode('#menu li:hover{background-color: '+setting.themeColor+';cursor: pointer;}.contextmenu{background-color: '+setting.themeColor+';}');
@@ -60,6 +62,8 @@
 
 		inside.style.backgroundColor = setting.themeColor;
 		flag.style.backgroundColor = setting.themeColor;
+		searchMain.style.backgroundColor = setting.themeColor;
+		suggest.style.backgroundColor = hexToRGBA(setting.themeColor,0.3);
 		left.style.backgroundColor = hexToRGBA(setting.themeColor,0.3);
 		bottomBar.style.backgroundColor = hexToRGBA(setting.themeColor,0.4);
 		color.value = setting.themeColor;

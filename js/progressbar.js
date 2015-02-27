@@ -11,9 +11,11 @@
 		this._fragtion = 0;//进度条比例0~1
 		this._pressFlag = false;
 		this._lock = false;
+		EventTarget.call(this);
 		this._addEventListener();
 	}
 	Progressbar.prototype = new EventTarget();
+	Progressbar.prototype.constructor = Progressbar;
 	Progressbar.prototype._addEventListener = function(){
 		var that = this;
 		this.target.addEventListener("mousedown",function(event){//在进度条上点击

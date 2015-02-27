@@ -5,6 +5,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<link href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" />
 		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
+		<link rel="stylesheet" type="text/css" href="css/search.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body class="bg">
@@ -65,22 +66,31 @@
 			<li>播放</li>
 			<li>删除</li>
 		</ul>
+		<div id="searchBox" class="hide">
+			<div id="searchMain">
+				<span class="glyphicon glyphicon-search" id="searchIco" aria-hidden="true"></span>
+				<input type="text" id="search" />
+			</div>
+			<div id="suggest"></div>
+		</div>
 		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
 		<script src="http://spnews.qiniudn.com/StackBlur.js"></script>
 		<!--script src="js/player.min.js"></script-->
 		<script src="js/event.js"></script>
 		<script src="js/progressbar.js"></script>
+		<script src="js/search.js"></script>
+		<script src="js/printSearchBox.js"></script>
 		<script src="js/indexing.js"></script>
 		<script src="js/helper.js"></script>
 		<script src="js/left.js"></script>
 		<script src="js/index.js"></script>
 		<script>
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-			ga('create', 'UA-60002646-1', 'auto');
-			ga('send', 'pageview');
+			// (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			// (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			// m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			// })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+			// ga('create', 'UA-60002646-1', 'auto');
+			// ga('send', 'pageview');
 		</script>
 	</body>
 </html>
