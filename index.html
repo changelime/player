@@ -6,37 +6,14 @@
 		<link href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" />
 		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
 		<link rel="stylesheet" type="text/css" href="css/search.css" />
+		<link rel="stylesheet" type="text/css" href="css/pop.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body class="bg">
 		<div class="container-fluid">
-			<div id="left">
-				<ul>
-					<li>
-						<label class="item">列表</label>
-						<ol id="list" class="hide"></ol>
-					</li>
-					<li>
-						<label class="item">设置</label>
-						<ul id="setting" class="hide">
-							<li><label class="half">主题颜色</label><input id="color" class="half" type="color" /></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
 			<div id="main" class="row text-center">
 				<div id="text">
-					<label id="info">
-						一个音乐播放器<br>
-						仅支持在chrome浏览器下播放MP3格式的音乐<br>
-						为了保证完整的体验，请使用包含ID3（自带封面）的MP3音乐<br>
-						如果音乐不含封面，会自动生成一张图片伪装成封面<br>
-						把音乐拖放到浏览器窗口，可批量拖放<br>
-						拖放后浏览器会记忆播放列表，再次打开网页会继续播放，不用再次拖放<br>
-						需要再次增加音乐，继续拖放即可<br>
-						鼠标移至左侧会展开播放列表和设置选项<br>
-						鼠标滚轮调整音量<br>
-					</label><br>
+					<label id="info"></label><br>
 				</div>
 				<div id="pic" class="center" style="display:none;">
 					<img id="albumPic" class="center revolve"  src="" />
@@ -62,6 +39,23 @@
 		</div>
 		<canvas style="display:none;" id="canvas"></canvas>
 		<audio id="audio" autoplay="autoplay" src=""></audio>
+		<div id="left">
+			<ul>
+				<li>
+					<label class="item">列表</label>
+					<ol id="list" class="hide"></ol>
+				</li>
+				<li>
+					<label class="item">设置</label>
+					<ul id="setting" class="hide">
+						<li><label class="half">主题颜色</label><input id="color" class="half" type="color" /></li>
+					</ul>
+				</li>
+				<li>
+					<label class="item" id="about">关于</label>
+				</li>
+			</ul>
+		</div>
 		<ul id="menu">
 			<li>播放</li>
 			<li>删除</li>
@@ -73,6 +67,33 @@
 			</div>
 			<div id="suggest"></div>
 		</div>
+		<div class="popBox" data-hide="true">
+			<div class="pophead">
+				<div class="closeBtn"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></div>
+				<h2>关于</h2>
+			</div>
+			<div class="popBody">
+				<p>一个音乐播放器,仅支持在chrome浏览器下播放MP3格式的音乐为了。保证完整的体验，请使用包含ID3（自带封面）的MP3音乐，如果音乐不含封面，会自动生成一张图片代替。把音乐拖放到浏览器窗口，可批量拖放，拖放后浏览器会记忆播放列表，再次打开网页会继续播放，不用再次拖放，需要再次增加音乐，继续拖放即可。鼠标移至左侧会展开播放列表和设置选项。鼠标滚轮调整音量。ctrl+f可以打开搜索功能</p>
+				<br/>
+				<h4>已实现功能：</h4>
+				<ul>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 拖放增加音乐</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放控制</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 音量调节</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 进度条</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 展示自带封面</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放模式切换（随机、列表循环、单曲循环）</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 频谱</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放列表</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 主题颜色更改</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 本地存储（基于indexedDB）</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 搜索（ctrl+f）</li>
+				</ul>
+			</div>
+			<div class="popFooter">
+				<a href="https://github.com/pcwow789/player" title="Github" style="background-image: url(http://spnews.qiniudn.com/g.png);width: 30px;height: 30px;background-size: 100%;float: right;"></a>
+			</div>
+		</div>
 		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
 		<script src="http://spnews.qiniudn.com/StackBlur.js"></script>
 		<!--script src="js/player.min.js"></script-->
@@ -80,6 +101,7 @@
 		<script src="js/progressbar.js"></script>
 		<script src="js/search.js"></script>
 		<script src="js/printSearchBox.js"></script>
+		<script src="js/pop.js"></script>
 		<script src="js/indexing.js"></script>
 		<script src="js/helper.js"></script>
 		<script src="js/left.js"></script>

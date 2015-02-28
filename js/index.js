@@ -14,6 +14,7 @@
 		title = document.createElement("label"),
 		color = document.getElementById("color"),
 		list = document.getElementById("list"),
+		about = document.getElementById("about"),
 		dragging = false,
 		pressProgress = false,
 		playing = 0,
@@ -44,9 +45,6 @@
 		text.appendChild(title);
 		text.appendChild(document.createElement("br"));
 		text.appendChild(artist);
-		/*addListeners(document.getElementById("list").children,function(){
-			play(this.innerText);
-		});*/
 	};
 	var dropFiles = null;
 	var ctrl = load(function(){
@@ -55,6 +53,8 @@
 		{
 			loadMusic();
 		}
+		else
+			document.querySelectorAll(".popBox")[0].open();
 		dropFiles = function (event){
 			var files = null,
 				i = 0,
@@ -351,6 +351,9 @@
 				"单曲循环" : "repeat"
 			}
 			setMode(index[this.title]);
+	});
+	about.addEventListener("click",function(event){
+		document.querySelectorAll(".popBox")[0].open();
 	});
 	progressbar.on("pressBar",function(event){//监听进度条的pressProgress事件，单击进度条后更改播放位置
 		console.log("pressBar");

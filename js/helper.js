@@ -55,11 +55,13 @@
 		var bottomBar = document.getElementById("bottomBar");
 		var searchMain = document.getElementById("searchMain");
 		var suggest = document.getElementById("suggest");
+		[].forEach.call(document.querySelectorAll(".popBox"),function(item, index){
+			item.style.backgroundColor = setting.themeColor;
+		});
 		if(contextmenuStyle)
 	    	style.removeChild(contextmenuStyle);
 	    contextmenuStyle = document.createTextNode('#menu li:hover{background-color: '+setting.themeColor+';cursor: pointer;}.contextmenu{background-color: '+setting.themeColor+';}');
 	    style.appendChild(contextmenuStyle);
-
 		inside.style.backgroundColor = setting.themeColor;
 		flag.style.backgroundColor = setting.themeColor;
 		searchMain.style.backgroundColor = setting.themeColor;
