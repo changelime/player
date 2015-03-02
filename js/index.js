@@ -86,52 +86,6 @@
 		document.body.addEventListener("drop",dropFiles);
 	});
 
-	var spectrum = document.getElementById('spectrum');
-    var cwidth = spectrum.offsetWidth;
-    var cheight = spectrum.offsetHeight - 2;
-    var meterWidth = 5; //频谱条宽度
-    var gap = 2; //频谱条间距
-    var capHeight = 2;
-    var capStyle = "#56FFF6";
-    var meterNum = cwidth/(meterWidth + gap); //频谱条数量
-    var capYPositionArray = []; //将上一画面各帽头的位置保存到这个数组
-    var ctx = spectrum.getContext('2d');
-    var id = 0;
-	var drawMeter = function() {
-        var array = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(array);
-        var step = Math.round(array.length / (meterNum+(meterNum/6))); //计算采样步长
-        ctx.clearRect(0, 0, cwidth, cheight);
-        for (var i = 0; i < meterNum; i++) {
-            var value = array[i * step]; //获取当前能量值
-            if (capYPositionArray.length < Math.round(meterNum)) {
-                capYPositionArray.push(value); //初始化保存帽头位置的数组，将第一个画面的数据压入其中
-            };
-            ctx.fillStyle = capStyle;
-            //开始绘制帽头
-            if (value < capYPositionArray[i]) { //如果当前值小于之前值
-                ctx.fillRect(i * (meterWidth + gap), cheight - (--capYPositionArray[i]), meterWidth, capHeight); //则使用前一次保存的值来绘制帽头
-            } else {
-                ctx.fillRect(i * (meterWidth + gap), cheight - value, meterWidth, capHeight); //否则使用当前值直接绘制
-                capYPositionArray[i] = value;
-            };
-            //开始绘制频谱条
-            ctx.fillStyle = ctrl.setting.getThemeColor();
-            ctx.fillRect(i * (meterWidth + gap), cheight - value + capHeight, meterWidth, cheight);
-        }
-        id = requestAnimationFrame(drawMeter);
-        // console.log(id);
-    };
-    var resize = function(){
-    	var width = document.createAttribute("width");
-		width.value = document.body.offsetWidth + "px";
-
-		spectrum.attributes.setNamedItem(width);
-    	cwidth = spectrum.offsetWidth;
-    	meterNum = cwidth/(meterWidth + gap);
-    	console.log(spectrum.width,document.body.offsetWidth);
-    };
-    resize();
 	progressbar.lock();
 	style.type = "text/css";
 	head.appendChild(style);
@@ -176,6 +130,7 @@
 		}
 		return file;
 	}
+	var start = Date.now();
 	function play(state)
 	{
 		var file = choise(state);
@@ -183,6 +138,7 @@
 		console.log(file);
 		reader = new FileReader();
 		reader.readAsDataURL(file);
+		start = Date.now();
 		info.innerText = "载入中...";
 		title.innerText = "";
 		artist.innerText = "";
@@ -197,7 +153,7 @@
 		reader.onload = function(){
 			audio.src = reader.result;
 		};
-		ID3.loadTags(file.name, function() {//读取ID3信息
+		ID3.loadTags(file.name, function(){//读取ID3信息
 			var tags = ID3.getAllTags(file.name),
 			image = tags.picture,
 			base64String = "";
@@ -233,7 +189,6 @@
 		});
 		isload = false;
 	}
-	window.addEventListener("resize",resize);
 	document.body.addEventListener("mousewheel",function(event){
 		contextmenuList(null,true);
 		menu.style.visibility = "hidden";
@@ -324,13 +279,14 @@
 		contextmenuList(null,true);
 	});
 	audio.addEventListener('play', function(){
-        id = requestAnimationFrame(drawMeter);
+		initSpectrum(analyser, ctrl);
+        startSpectrum();
     });
     audio.addEventListener('pause', function(){
-        cancelAnimationFrame(id);
+        stopSpectrum();
     });
     audio.addEventListener('loadedmetadata', function(){
-    	cancelAnimationFrame(id);
+    	stopSpectrum();
     });
 	audio.addEventListener("canplay",function(event){//载入完成修改状态
 	    isload = true;
@@ -340,6 +296,7 @@
 	    	albumPic.classList.remove("paused");
 	    	albumPic.classList.add("running");
 	    }
+	    console.log(Date.now() - start);
 	});
 	audio.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
@@ -360,9 +317,6 @@
 		audio.currentTime = progressbar.getPosition() * audio.duration;
 		
 	});
-	/*progressbar.on("draggingFlag",function(event){
-		console.log("draggingFlag");
-	});*/
 	progressbar.on("startDraggingFlag",function(event){//监听进度条的startDragging事件，拖动开始，更改拖动状态
 		console.log("startDraggingFlag");
 		pressProgress = true;

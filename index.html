@@ -7,6 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
 		<link rel="stylesheet" type="text/css" href="css/search.css" />
 		<link rel="stylesheet" type="text/css" href="css/popBox.css" />
+		<link rel="stylesheet" type="text/css" href="css/Mswitch.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
 	<body class="bg">
@@ -49,6 +50,16 @@
 					<label class="item">设置</label>
 					<ul id="setting" class="hide">
 						<li><label class="half">主题颜色</label><input id="color" class="half" type="color" /></li>
+						<li>
+							<label class="half">频谱</label><div class="half">
+								<div class="switch " id="switch">
+									<div class="switchContent switchOn">
+										<div class="switchOnText"><label>on</label></div>
+										<div class="switchOffText"><label>off</label></div>
+									</div>
+								</div>
+							</div>
+						</li>
 					</ul>
 				</li>
 				<li>
@@ -83,7 +94,7 @@
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 进度条</li>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 展示自带封面</li>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放模式切换（随机、列表循环、单曲循环）</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 频谱</li>
+					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 频谱（15-03-02新增开关）</li>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放列表</li>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 主题颜色更改</li>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 本地存储（基于indexedDB）</li>
@@ -105,6 +116,8 @@
 		<script src="js/indexing.js"></script>
 		<script src="js/helper.js"></script>
 		<script src="js/left.js"></script>
+		<script src="js/Mswitch.js"></script>
+		<script src="js/spectrum.js"></script>
 		<script src="js/index.js"></script>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

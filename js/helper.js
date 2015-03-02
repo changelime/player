@@ -140,6 +140,7 @@
 			themeColor : "#41A868",
 			mode : "repeatAll",
 			spectrum : true,
+			spectrumVisible : true,
 			playing : 0
 		};
 		var db = new Indexing({
@@ -188,6 +189,18 @@
 					}
 				});
 			};
+			setting.getSpectrumVisible = function(){
+				return _setting.spectrumVisible;
+			};
+			setting.setSpectrumVisible = function(){
+				_setting.spectrumVisible = !_setting.spectrumVisible;
+				db.setting.put(_setting, function(err, result){
+					if(!err)
+					{
+						console.log("setSpectrumVisible success", result);
+					}
+				});
+			};
 			setting.getPlaying = function(){
 				return _setting.playing;
 			};
@@ -222,6 +235,7 @@
 					_setting.mode = result.mode;
 					_setting.spectrum = result.spectrum;
 					_setting.playing = result.playing;
+					_setting.spectrumVisible = result.spectrumVisible;
 					printThemeColor(_setting);
 					setMode(_setting.mode,true);
 					done();
