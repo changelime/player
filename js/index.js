@@ -1,34 +1,32 @@
 (function(){
-	var text = document.getElementById("text"),
-		info = document.getElementById("info"),
-		albumPic = document.getElementById("albumPic"),
-		time = document.getElementById("time"),
-		fraction = document.getElementById("fraction"),
-		audio = document.getElementById("audio"),
-		control = document.getElementById("control"),
-		changeStatus = document.getElementById("changeStatus"),
-		canvas = document.getElementById("canvas"),
-		style = document.createElement("style"),
-		head = document.getElementsByTagName("head")[0],
-		artist = document.createElement("label"),
-		title = document.createElement("label"),
-		color = document.getElementById("color"),
-		list = document.getElementById("list"),
-		about = document.getElementById("about"),
-		dragging = false,
-		pressProgress = false,
-		playing = 0,
-		STATES = {
+	var text = document.getElementById("text");
+	var	info = document.getElementById("info");
+	var pic = document.getElementById("pic");
+	var time = document.getElementById("time");
+	var	fraction = document.getElementById("fraction");
+	var	audio = document.getElementById("audio");
+	var	control = document.getElementById("control");
+	var	changeStatus = document.getElementById("changeStatus");
+	var	canvas = document.getElementById("canvas");
+	var	style = document.createElement("style");
+	var	head = document.getElementsByTagName("head")[0];
+	var	artist = document.createElement("label");
+	var	title = document.createElement("label");
+	var	color = document.getElementById("color");
+	var	list = document.getElementById("list");
+	var	about = document.getElementById("about");
+	var	dragging = false;
+	var	pressProgress = false;
+	var	STATES = {
 			NEXT:"NEXT",
 			PREV:"PREV"
-		},
-		isload = false,
-		bg = null,
-		progressbar = new Progressbar("#progress"),
-		audioContext = null,
-		sourceNode = null,
-		analyser = null;
-
+		};
+	var	isload = false;
+	var	bg = null;
+	var	progressbar = new Progressbar("#progress");
+	var	audioContext = null;
+	var	sourceNode = null;
+	var	analyser = null;
 	var loadMusic = function(){
 		if(isload)
 			return;
@@ -46,16 +44,12 @@
 		text.appendChild(document.createElement("br"));
 		text.appendChild(artist);
 	};
-	var dropFiles = null;
 	var ctrl = load(function(){
-		console.log("load",ctrl);
 		if(ctrl.music.getLength() > 0)
-		{
 			loadMusic();
-		}
 		else
 			document.querySelectorAll(".popBox")[0].open();
-		dropFiles = function (event){
+		var dropFiles = function (event){
 			var files = null,
 				i = 0,
 				len = 0;
@@ -69,9 +63,7 @@
 				while( len > i )
 				{
 					if( files[i].type == "audio/mp3" )
-					{
 						items.push(files[i]);
-					}
 					i++;
 				}
 				ctrl.music.addAll(items, function(){
@@ -85,7 +77,6 @@
 		document.body.addEventListener("dragover",dropFiles);
 		document.body.addEventListener("drop",dropFiles);
 	});
-
 	progressbar.lock();
 	style.type = "text/css";
 	head.appendChild(style);
@@ -130,7 +121,6 @@
 		}
 		return file;
 	}
-	var start = Date.now();
 	function play(state)
 	{
 		var file = choise(state);
@@ -138,32 +128,35 @@
 		console.log(file);
 		reader = new FileReader();
 		reader.readAsDataURL(file);
-		start = Date.now();
 		info.innerText = "载入中...";
 		title.innerText = "";
 		artist.innerText = "";
 		reader.onerror = function(){
 			console.log("error");
 			var index = ctrl.setting.getPlaying();
+			console.log(index);
 			ctrl.music.removeByIndex(index, function(){
 				isload = true;
 				play(STATES.NEXT);
+				console.log("remove");
 			});
 		};
 		reader.onload = function(){
 			audio.src = reader.result;
 		};
 		ID3.loadTags(file.name, function(){//读取ID3信息
-			var tags = ID3.getAllTags(file.name),
-			image = tags.picture,
-			base64String = "";
+			var tags = ID3.getAllTags(file.name);
+			var image = tags.picture;
+			var base64String = "";
+			var imgUrl = "";
 			if(image && image.data)
 			{
 				for (var i = 0; i < image.data.length; i++)
 		        {
 		            base64String += String.fromCharCode(image.data[i]);
 		        }
-			    albumPic.src = "data:" + image.format + ";base64," + window.btoa(base64String);
+			     
+			    imgUrl = "data:" + image.format + ";base64," + window.btoa(base64String);
 			}
 			else
 			{
@@ -171,14 +164,16 @@
 				image.width = 512;
 				image.height = 512;
 				print(image,10,512);
-				albumPic.src = image.toDataURL();
+				imgUrl = image.toDataURL();
 			}
-		    albumPic.parentElement.style.display = "initial";
-		    stackBlurImage("albumPic", "canvas", 180, false );
-		    if(bg)
-		    	style.removeChild(bg);
-		    bg = document.createTextNode('.bg{background-image:url("'+canvas.toDataURL()+'")}');
-		    style.appendChild(bg);
+			pic.style.backgroundImage = "url(" + imgUrl + ")";
+		    pic.style.display = "initial";
+		    stackBlurImage( imgUrl, canvas, 180, function(){
+		    	if(bg)
+		    		style.removeChild(bg);
+			    bg = document.createTextNode('.bg{background-image:url("'+canvas.toDataURL()+'")}');
+			    style.appendChild(bg);
+		    });
 		    info.innerText = "";
 		    title.innerText = tags.title;
 		    artist.innerText = tags.artist;
@@ -211,9 +206,9 @@
 		{
 			switch(e.className)
 			{
-				case "glyphicon glyphicon-play" : audio.play();e.className = "glyphicon glyphicon-pause";albumPic.classList.remove("paused");albumPic.classList.add("running");
+				case "glyphicon glyphicon-play" : audio.play();e.className = "glyphicon glyphicon-pause";pic.classList.remove("paused");pic.classList.add("running");
 					break;
-				case "glyphicon glyphicon-pause" : audio.pause();e.className = "glyphicon glyphicon-play";albumPic.classList.remove("running");albumPic.classList.add("paused");
+				case "glyphicon glyphicon-pause" : audio.pause();e.className = "glyphicon glyphicon-play";pic.classList.remove("running");pic.classList.add("paused");
 					break;
 				case "glyphicon glyphicon-backward" : play(STATES.PREV);
 					break;
@@ -255,7 +250,6 @@
 			songName = event.target.innerText;
 			contextmenuList(event.target,false);
 		}
-		
 	});
 	var menu = document.getElementById("menu");
 	menu.firstElementChild.addEventListener("click", function(event)
@@ -293,10 +287,9 @@
 	    if( control.children[1].className == "glyphicon glyphicon-play" )
 	    {
 	    	control.children[1].className = "glyphicon glyphicon-pause";
-	    	albumPic.classList.remove("paused");
-	    	albumPic.classList.add("running");
+	    	pic.classList.remove("paused");
+	    	pic.classList.add("running");
 	    }
-	    console.log(Date.now() - start);
 	});
 	audio.addEventListener("ended",function(event){//结束后播放下一曲
 		play(STATES.NEXT);
@@ -322,7 +315,6 @@
 		pressProgress = true;
 		dragging = true;
 	});
-	
 	progressbar.on("stopDraggingFlag",function(event){//监听进度条的stopDragging事件，拖动结束，更改拖动状态
 		console.log("stopDraggingFlag");
 		if(pressProgress && audio.currentTime != 0)

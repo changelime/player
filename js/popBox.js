@@ -7,7 +7,6 @@
 		if(isHide)
 		{
 			item.style.top = "-100%";
-			item.style.display = "none";
 		}
 		var hide = function(){
 			if(parseInt(item.style.top) == -100)
@@ -23,7 +22,7 @@
 			else
 			{
 				isHide = true;
-				item.style.display = "none";
+				item.classList.add("hide");
 			}
 		};
 		var show = function(){
@@ -32,7 +31,7 @@
 			if( parseInt(item.style.top) < 0 )
 			{
 				item.style.top = "100%";
-				item.style.display = "";
+				item.classList.remove("hide");
 				isHide = false;
 				item.style.zIndex = ++zIndex;
 			}

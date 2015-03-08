@@ -135,6 +135,42 @@ body
 }
 #pic
 {
+	width: 280px;
+	height: 280px;
+	border-radius: 50%;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	box-shadow : 0px 0px 0px 10px #1f1f1f,
+				 0px 0px 0px 117px #2d2d2d,
+				 0px 0px 0px 120px #222;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
+#pic:after
+{
+	content: "";
+	display: block;
+	width: 10px;
+	height: 10px;
+	background-color: #333;
+	border-radius: 50%;
+	box-shadow : 0px 0px 0px 5px #850f04,
+				 0px 0px 0px 30px #9a1506,
+				 0px 0px 0px 35px #850f04;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
+/*
+#pic
+{
 	width: 512px;
 	height: 512px;
 	background-color: #2d2d2d; 
@@ -173,7 +209,7 @@ body
 	border: solid 10px;
 	border-color: #1f1f1f;
 	border-radius: 50%;
-}
+}*/
 #bottomBar
 {
 	position: fixed;

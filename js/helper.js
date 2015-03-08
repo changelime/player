@@ -313,6 +313,8 @@
 							var name = music.files[index].name;
 							delete music.filesIndex[ name ];
 							music.files.splice(index, 1);
+							if(setting.getPlaying() >= music.files.length)
+								setting.setPlaying(music.files.length-1)
 							printList(music.files);
 							callback(index,name);
 							console.log("remove success");

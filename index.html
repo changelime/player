@@ -3,24 +3,20 @@
 	<head>
 		<title>player</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" />
-		<link rel="stylesheet" type="text/css" href="css/progressbar.css" />
-		<link rel="stylesheet" type="text/css" href="css/search.css" />
-		<link rel="stylesheet" type="text/css" href="css/popBox.css" />
-		<link rel="stylesheet" type="text/css" href="css/Mswitch.css" />
+		<link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="css/progressbar.css" />
+		<link rel="stylesheet" href="css/search.css" />
+		<link rel="stylesheet" href="css/popBox.css" />
+		<link rel="stylesheet" href="css/Mswitch.css" />
 		<link rel="stylesheet" href="css/index.css" />
 	</head>
-	<body class="bg">
+	<body class="bg"> 
 		<div class="container-fluid">
 			<div id="main" class="row text-center">
 				<div id="text">
 					<label id="info"></label><br>
 				</div>
-				<div id="pic" class="center" style="display:none;">
-					<img id="albumPic" class="center revolve"  src="" />
-					<div id="littleRing" class="center"></div>
-					<div id="centerRing" class="center"></div>
-				</div>
+				<div id="pic" class="revolve" style="display:none;"></div>
 				<canvas id="spectrum" width="1920px" height="350px"></canvas>
 			</div>
 		</div>
@@ -78,14 +74,13 @@
 			</div>
 			<div id="suggest"></div>
 		</div>
-		<div class="popBox" data-hide="true">
+		<div class="popBox hide" data-hide="true">
 			<div class="pophead">
 				<div class="closeBtn"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></div>
 				<h2>关于</h2>
 			</div>
 			<div class="popBody">
 				<p>一个音乐播放器,仅支持在chrome浏览器下播放MP3格式的音乐为了。保证完整的体验，请使用包含ID3（自带封面）的MP3音乐，如果音乐不含封面，会自动生成一张图片代替。把音乐拖放到浏览器窗口，可批量拖放，拖放后浏览器会记忆播放列表，再次打开网页会继续播放，不用再次拖放，需要再次增加音乐，继续拖放即可。鼠标移至左侧会展开播放列表和设置选项。鼠标滚轮调整音量。ctrl+f可以打开搜索功能</p>
-				<br/>
 				<h4>已实现功能：</h4>
 				<ul>
 					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 拖放增加音乐</li>
@@ -106,8 +101,7 @@
 			</div>
 		</div>
 		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
-		<script src="http://spnews.qiniudn.com/StackBlur.js"></script>
-		<!--script src="js/player.min.js"></script-->
+		<script src="js/StackBlur.js"></script>
 		<script src="js/event.js"></script>
 		<script src="js/progressbar.js"></script>
 		<script src="js/search.js"></script>
