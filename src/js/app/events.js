@@ -195,30 +195,6 @@ export default async function(app) {
 				}
 				else
 				{
-<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6:src/js/app/events.js
-<<<<<<< ad7e15a4af4c8d69eb174175549e67deada676f4:src/js/app/events.js
-=======
-					// var sortList = [].map.call(list, (item, index)=>{
-					// 	item = $(item);
-					// 	var name = item.text();
-					// 	var distance = levenshteinDistance(input, name);
-					// 	item.data("item-levenshteinDistance", distance);
-					// 	console.log("map", input, name, distance);
-					// 	return item;
-					// }).filter((item)=>{
-					// 	return +(item.data("item-levenshteinDistance")) > 0;
-					// }).sort((a, b)=>{
-					// 	var ad = +($(a).data("item-levenshteinDistance"));
-					// 	var bd = +($(b).data("item-levenshteinDistance"));
-					// 	console.log("sort: ", ad, bd);
-					// 	return ad < bd;
-					// });
-					// sortList.forEach((item)=>{
-					// 	console.log("finish", +(item.data("item-levenshteinDistance")));
-					// });
->>>>>>> add feature:lib/js/app/events.js
-=======
->>>>>>> update:src/js/app/events.js
 					list.removeClass("hide");
 					var mapedList = [].map.call(list, (item, index)=>{
 						item = $(item);
