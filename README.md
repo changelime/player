@@ -10,15 +10,12 @@
     git clone https://github.com/changelime/player.git
     cd player
     npm install --only=dev && npm install -g jspm && jspm install
-
-    //打开chrome扩展管理烈面，加载NodeTab目录
 ```
 
 ## 构建
 ```sh
     jspm bundle-sfx src/js/app.js dest/js/app.bundle.js
     npm run built
-    //打开chrome扩展管理烈面，加载NodeTab/dest目录
 ```
 
 ## 功能
