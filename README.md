@@ -2,7 +2,7 @@
 一个基于Web Audio API的本地音乐播放器
 
 [![travis-ci][travis-ci-badge]][travis-ci-link]
-
+[![david-dm][david-dm-badge]][david-dm-link]
 
 
 ## 开发
@@ -44,3 +44,5 @@ MIT
 <!-- Link -->
 [travis-ci-badge]:    https://api.travis-ci.org/changelime/player.svg
 [travis-ci-link]:     https://travis-ci.org/changelime/player
+[david-dm-badge]:     https://david-dm.org/changelime/player/dev-status.svg
+[david-dm-link]:      https://david-dm.org/changelime/player?type=dev
