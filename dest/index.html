@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>player</title>
+		<link rel="stylesheet" href="./css/bundle.css"/>
+	</head>
+	<body>
+		<div id="content">
+			<canvas id="bg" width="100%" height="100%"></canvas>
+			<button id="menu" ><i class="fa fa-bars" aria-hidden="true"></i></button>
+			<div id="left-side">
+				<ul id="item-set">
+					<li class="item">
+						<input type="text" placeholder="Search" autocomplete="off" id="searchInput" />
+					</li>
+					<li class="item" id="add-file">
+						<div id="file-wrap">
+							<div id="file-tip">
+								<i class="fa fa-plus"></i>
+								<div id="click-add"><label >点击添加</label></div>
+								<div id="drop-add"><label >松开鼠标添加</label></div>
+							</div>
+							<input title=" " id="fileInput" multiple="multiple" accept="audio/mp3" type="file" />
+						</div>
+					</li>
+					<li class="item open" id="file-list">
+						<header>播放列表</header>
+						<ol id="list"></ol>
+						<div id="list-menu">
+							<ul>
+								<li>播放</li>
+								<li>删除</li>
+							</ul>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div id="center">
+				<div id="song-info">
+					<label id="song-name"></label>
+					<label id="song-artist"></label>
+				</div>
+				<div id="cover" class="revolve paused"></div>
+				<div id="control">
+					<button id="prevBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-left"></i>
+					</button>
+					<button id="playBtn" class="button" href="javascript:;">
+						<i class="fa fa-play"></i>
+					</button>
+					<button id="nextBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-right"></i>
+					</button>
+				</div>
+			</div>
+			<div id="bottom">
+				<div id="prograss">
+					<div class="prograss-outside">
+						<div class="prograss-inside">
+							<button class="ctrl-point button" href="javascript:;"></button>
+						</div>
+					</div>
+				</div>
+				<div id="status-info">
+					<label>00:00/00:00</label>
+					<label>0/0</label>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script src="./js/app.bundle.js"></script>
+</html>
