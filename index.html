@@ -1,125 +1,163 @@
 <!DOCTYPE html>
 <html>
+<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6
+<<<<<<< ad7e15a4af4c8d69eb174175549e67deada676f4
+=======
+>>>>>>> update
 	<head>
 		<title>player</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="http://cdn.staticfile.org/twitter-bootstrap/3.3.0/css/bootstrap.min.css" />
-		<link rel="stylesheet" href="css/progressbar.css" />
-		<link rel="stylesheet" href="css/search.css" />
-		<link rel="stylesheet" href="css/popBox.css" />
-		<link rel="stylesheet" href="css/Mswitch.css" />
-		<link rel="stylesheet" href="css/index.css" />
+		<!-- build:css ./css/bundle.css -->
+		<link rel="stylesheet" type="text/css" href="src/css/app.css">
+		<link rel="stylesheet" type="text/css" href="src/css/font-awesome.min.css">
+		<!-- /build --> 
 	</head>
-	<body class="bg"> 
-		<div class="container-fluid">
-			<div id="main" class="row text-center">
-				<div id="text">
-					<label id="info"></label><br>
-				</div>
-				<div id="pic" class="revolve" style="display:none;"></div>
-				<canvas id="spectrum" width="1920px" height="350px"></canvas>
-			</div>
-		</div>
-		<div id="bottomBar">
-			<div id="progress" class="progressbar"></div>
-			<br>
-			<div id="infoBox">
-				<label id="time" >0.00 / 0.00</label>
-				<label id="fraction" >0 / 0</label>
-				<span title="列表循环" id="changeMode" class="glyphicon glyphicon-retweet"> </span>
-			</div>
-			<div id="control" class="text-center">
-				<span class="glyphicon glyphicon-backward"></span>
-				<span class="glyphicon glyphicon-pause"></span>
-				<span class="glyphicon glyphicon-forward"></span>
-			</div>
-		</div>
-		<canvas style="display:none;" id="canvas"></canvas>
-		<audio id="audio" autoplay="autoplay" src=""></audio>
-		<div id="left">
-			<ul>
-				<li>
-					<label class="item">列表</label>
-					<ol id="list" class="hide"></ol>
-				</li>
-				<li>
-					<label class="item">设置</label>
-					<ul id="setting" class="hide">
-						<li><label class="half">主题颜色</label><input id="color" class="half" type="color" /></li>
-						<li>
-							<label class="half">频谱</label><div class="half">
-								<div class="switch " id="switch">
-									<div class="switchContent switchOn">
-										<div class="switchOnText"><label>on</label></div>
-										<div class="switchOffText"><label>off</label></div>
-									</div>
-								</div>
+	<body>
+		<div id="content">
+			<canvas id="bg" width="100%" height="100%"></canvas>
+			<button id="menu" ><i class="fa fa-bars" aria-hidden="true"></i></button>
+			<div id="left-side">
+				<ul id="item-set">
+					<li class="item">
+						<input type="text" placeholder="Search" autocomplete="off" id="searchInput" />
+					</li>
+					<li class="item" id="add-file">
+						<div id="file-wrap">
+							<div id="file-tip">
+								<i class="fa fa-plus"></i>
+								<div id="click-add"><label >点击添加</label></div>
+								<div id="drop-add"><label >松开鼠标添加</label></div>
 							</div>
-						</li>
-					</ul>
+							<input title=" " id="fileInput" multiple="multiple" accept="audio/mp3" type="file" />
+<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6
+=======
+<head>
+	<title>player</title>
+	<script type="text/javascript" src="jspm_packages/system.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <link rel="stylesheet" type="text/css" href="lib/css/app.css">
+</head>
+<body>
+	<div id="content">
+		<canvas id="bg" width="100%" height="100%"></canvas>
+		<button id="menu" ><i class="fa fa-bars" aria-hidden="true"></i></button>
+		<div id="left-side">
+			<ul id="item-set">
+				<li class="item">
+					<input type="text" placeholder="Search" autocomplete="off" id="searchInput" />
 				</li>
-				<li>
-					<label class="item" id="about">关于</label>
-				</li>
-			</ul>
-		</div>
-		<ul id="menu">
-			<li>播放</li>
-			<li>删除</li>
-		</ul>
-		<div id="searchBox" class="hide">
-			<div id="searchMain">
-				<span class="glyphicon glyphicon-search" id="searchIco" aria-hidden="true"></span>
-				<input type="text" id="search" />
-			</div>
-			<div id="suggest"></div>
-		</div>
-		<div class="popBox hide" data-hide="true">
-			<div class="pophead">
-				<div class="closeBtn"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></div>
-				<h2>关于</h2>
-			</div>
-			<div class="popBody">
-				<p>一个音乐播放器,仅支持在chrome浏览器下播放MP3格式的音乐为了。保证完整的体验，请使用包含ID3（自带封面）的MP3音乐，如果音乐不含封面，会自动生成一张图片代替。把音乐拖放到浏览器窗口，可批量拖放，拖放后浏览器会记忆播放列表，再次打开网页会继续播放，不用再次拖放，需要再次增加音乐，继续拖放即可。鼠标移至左侧会展开播放列表和设置选项。鼠标滚轮调整音量。ctrl+f可以打开搜索功能</p>
-				<h4>已实现功能：</h4>
-				<ul>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 拖放增加音乐</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放控制</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 音量调节</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 进度条</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 展示自带封面</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放模式切换（随机、列表循环、单曲循环）</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 频谱（15-03-02新增开关）</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 播放列表</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 主题颜色更改</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 本地存储（基于indexedDB）</li>
-					<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 搜索（ctrl+f）</li>
+				<li class="item" id="add-file">
+					<div id="file-wrap">
+						<div id="file-tip">
+							<i class="fa fa-plus"></i>
+							<div id="click-add"><label >点击添加</label></div>
+							<div id="drop-add"><label >松开鼠标添加</label></div>
+>>>>>>> add feature
+=======
+>>>>>>> update
+						</div>
+					</li>
+					<li class="item open" id="file-list">
+						<header>播放列表</header>
+						<ol id="list"></ol>
+						<div id="list-menu">
+							<ul>
+								<li>播放</li>
+								<li>删除</li>
+							</ul>
+						</div>
+					</li>
 				</ul>
+<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6
 			</div>
-			<div class="popFooter">
-				<a href="https://github.com/pcwow789/player" title="Github" style="background-image: url(http://spnews.qiniudn.com/g.png);width: 30px;height: 30px;background-size: 100%;float: right;"></a>
+<<<<<<< ad7e15a4af4c8d69eb174175549e67deada676f4
+			<div id="center">
+				<div id="song-info">
+					<label id="song-name"></label>
+					<label id="song-artist"></label>
+				</div>
+				<div id="cover" class="revolve paused"></div>
+				<div id="control">
+					<button id="prevBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-left"></i>
+					</button>
+					<button id="playBtn" class="button" href="javascript:;">
+						<i class="fa fa-play"></i>
+					</button>
+					<button id="nextBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-right"></i>
+					</button>
+				</div>
+			</div>
+			<div id="bottom">
+				<div id="prograss">
+					<div class="prograss-outside">
+						<div class="prograss-inside">
+							<button class="ctrl-point button" href="javascript:;"></button>
+						</div>
+					</div>
+				</div>
+				<div id="status-info">
+					<label>00:00/00:00</label>
+					<label>0/0</label>
+				</div>
+=======
+			<div id="cover" class="revolve paused"></div>
+			<div id="control">
+				<a id="prevBtn" href="javascript:;">
+					<i class="fa fa-chevron-left"></i>
+				</a>
+				<a id="playBtn" href="javascript:;">
+					<i class="fa fa-play"></i>
+				</a>
+				<a id="nextBtn" href="javascript:;">
+					<i class="fa fa-chevron-right"></i>
+				</a>
+=======
+>>>>>>> update
+			</div>
+			<div id="center">
+				<div id="song-info">
+					<label id="song-name"></label>
+					<label id="song-artist"></label>
+				</div>
+				<div id="cover" class="revolve paused"></div>
+				<div id="control">
+					<button id="prevBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-left"></i>
+					</button>
+					<button id="playBtn" class="button" href="javascript:;">
+						<i class="fa fa-play"></i>
+					</button>
+					<button id="nextBtn" class="button" href="javascript:;">
+						<i class="fa fa-chevron-right"></i>
+					</button>
+				</div>
+			</div>
+<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6
+			<div id="status-info">
+				<label>00:00/00:00</label>
+				<label>0/0</label>
+>>>>>>> add feature
+=======
+			<div id="bottom">
+				<div id="prograss">
+					<div class="prograss-outside">
+						<div class="prograss-inside">
+							<button class="ctrl-point button" href="javascript:;"></button>
+						</div>
+					</div>
+				</div>
+				<div id="status-info">
+					<label>00:00/00:00</label>
+					<label>0/0</label>
+				</div>
+>>>>>>> update
 			</div>
 		</div>
-		<script src="http://spnews.qiniudn.com/id3-minimized.js"></script>
-		<script src="js/StackBlur.js"></script>
-		<script src="js/event.js"></script>
-		<script src="js/progressbar.js"></script>
-		<script src="js/search.js"></script>
-		<script src="js/printSearchBox.js"></script>
-		<script src="js/popBox.js"></script>
-		<script src="js/indexing.js"></script>
-		<script src="js/helper.js"></script>
-		<script src="js/left.js"></script>
-		<script src="js/Mswitch.js"></script>
-		<script src="js/spectrum.js"></script>
-		<script src="js/index.js"></script>
-		<script>
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-			ga('create', 'UA-60002646-1', 'auto');
-			ga('send', 'pageview');
-		</script>
 	</body>
+	<!-- build:js ./js/app.bundle.js -->
+	<script type="text/javascript" src="jspm_packages/system.js"></script>
+	<script type="text/javascript" src="config.js"></script>
+	<script>System.import("src/js/app");</script>
+	<!-- /build --> 
 </html>

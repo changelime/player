@@ -1,0 +1,37 @@
+{
+  "name": "player",
+  "version": "1.0.1",
+  "description": "A HTML5 player",
+  "author": "change li",
+  "license": "MIT",
+  "scripts": {
+    "built": "gulp built"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat-css": "^2.3.0",
+    "gulp-jspm": "^0.5.12",
+    "gulp-minify": "0.0.12",
+    "gulp-processhtml": "^1.1.0"
+  },
+  "jspm": {
+    "dependencies": {
+      "jquery": "npm:jquery@^3.1.0"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+<<<<<<< 97d48691f9fbaee4a84888ec67f9c036831600c6
+<<<<<<< ad7e15a4af4c8d69eb174175549e67deada676f4
+      "core-js": "npm:core-js@^1.1.4"
+=======
+      "core-js": "npm:core-js@^1.1.4",
+      "traceur": "github:jmcriffey/bower-traceur@0.0.88",
+      "traceur-runtime": "github:jmcriffey/bower-traceur-runtime@0.0.88"
+>>>>>>> add feature
+=======
+      "core-js": "npm:core-js@^1.1.4"
+>>>>>>> update
+    }
+  }
+}

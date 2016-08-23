@@ -1,0 +1,14 @@
+language: node_js
+node_js: stable
+
+install:
+  - npm install --only=dev
+  - npm install -g jspm
+
+before_script:
+  - jspm config registries.github.auth $JSPM_GITHUB_AUTH_TOKEN
+  - jspm install
+
+script:
+  - jspm bundle-sfx src/js/app.js dest/js/app.bundle.js
+  - npm run built
