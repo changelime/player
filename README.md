@@ -26,7 +26,7 @@
 * 播放列表搜索
 
 ## 演示
-[Demo](changelime.github.io/player/dest/ "Demo")
+[Demo](http://changelime.github.io/player/dest/ "Demo")
 
 ![Demo](http://i.imgur.com/h0vI5f2.png)
 
