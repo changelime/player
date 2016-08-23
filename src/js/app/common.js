@@ -71,7 +71,10 @@ export default async function(app) {
 	// 	});
 	// };
 	var updateCounter = function updateCounter(){
-		app.counterEl.text(`${app.index + 1} / ${app.fileCount}`);
+		if( app.fileCount > 0 )
+		{
+			app.counterEl.text(`${app.index + 1} / ${app.fileCount}`);
+		}
 	};
 	var setCoverImg = function setCoverImg(img){
 		app.cover.css("background-image", `url("${img}")`);
@@ -156,20 +159,29 @@ export default async function(app) {
 	var loadFileList = function loadFileList(){
 		var playingId = app.audio.getSoundId();
 		return app.files.getAll().then((files)=>{
-			var list = $("#list");
-			cleanFileList();
-			files = files.sort((a, b)=>a.index > b.index);
-			for( let file of files )
+			if( files.length > 0 )
 			{
-				var playing = `""`;
-				if( file.id == playingId )
+				var list = $("#list");
+				cleanFileList();
+				files = files.sort((a, b)=>a.index > b.index);
+				for( let file of files )
 				{
-					playing = `"playing"`;
+					var playing = `""`;
+					if( file.id == playingId )
+					{
+						playing = `"playing"`;
+					}
+					list.append(`<li data-item-index=${file.index} class=${playing} data-item-id=${file.id}>${file.name}</li>`);
 				}
-				list.append(`<li data-item-index=${file.index} class=${playing} data-item-id=${file.id}>${file.name}</li>`);
+				app.fileCount = files.length;
+				updateCounter();
+				console.log("载入成功", app);
 			}
-			app.fileCount = files.length;
-			console.log("载入成功", app);
+			else
+			{
+				$("#menu").click();
+				console.log("未添加歌曲");
+			}
 		});
 	};
 	var loadTag = function loadTag(file, callback){
