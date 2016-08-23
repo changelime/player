@@ -1,6 +1,8 @@
 # Audio Player
 一个基于Web Audio API的本地音乐播放器
 
+[![travis-ci][travis-ci-badge]][travis-ci-link]
+
 
 
 ## 开发
@@ -38,3 +40,7 @@
 
 ## 许可
 MIT
+
+<!-- Link -->
+[travis-ci-badge]:    https://api.travis-ci.org/changelime/player.svg
+[travis-ci-link]:     https://travis-ci.org/changelime/player
