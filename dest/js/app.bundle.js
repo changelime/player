@@ -3621,7 +3621,9 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 							};
 
 							updateCounter = function updateCounter() {
-								app.counterEl.text(app.index + 1 + " / " + app.fileCount);
+								if (app.fileCount > 0) {
+									app.counterEl.text(app.index + 1 + " / " + app.fileCount);
+								}
 							};
 
 							setCoverImg = function setCoverImg(img) {
@@ -3716,42 +3718,48 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 							loadFileList = function loadFileList() {
 								var playingId = app.audio.getSoundId();
 								return app.files.getAll().then(function (files) {
-									var list = $("#list");
-									cleanFileList();
-									files = files.sort(function (a, b) {
-										return a.index > b.index;
-									});
-									var _iteratorNormalCompletion = true;
-									var _didIteratorError = false;
-									var _iteratorError = undefined;
+									if (files.length > 0) {
+										var list = $("#list");
+										cleanFileList();
+										files = files.sort(function (a, b) {
+											return a.index > b.index;
+										});
+										var _iteratorNormalCompletion = true;
+										var _didIteratorError = false;
+										var _iteratorError = undefined;
 
-									try {
-										for (var _iterator = _getIterator(files), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-											var file = _step.value;
-
-											var playing = "\"\"";
-											if (file.id == playingId) {
-												playing = "\"playing\"";
-											}
-											list.append("<li data-item-index=" + file.index + " class=" + playing + " data-item-id=" + file.id + ">" + file.name + "</li>");
-										}
-									} catch (err) {
-										_didIteratorError = true;
-										_iteratorError = err;
-									} finally {
 										try {
-											if (!_iteratorNormalCompletion && _iterator["return"]) {
-												_iterator["return"]();
+											for (var _iterator = _getIterator(files), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+												var file = _step.value;
+
+												var playing = "\"\"";
+												if (file.id == playingId) {
+													playing = "\"playing\"";
+												}
+												list.append("<li data-item-index=" + file.index + " class=" + playing + " data-item-id=" + file.id + ">" + file.name + "</li>");
 											}
+										} catch (err) {
+											_didIteratorError = true;
+											_iteratorError = err;
 										} finally {
-											if (_didIteratorError) {
-												throw _iteratorError;
+											try {
+												if (!_iteratorNormalCompletion && _iterator["return"]) {
+													_iterator["return"]();
+												}
+											} finally {
+												if (_didIteratorError) {
+													throw _iteratorError;
+												}
 											}
 										}
-									}
 
-									app.fileCount = files.length;
-									console.log("载入成功", app);
+										app.fileCount = files.length;
+										updateCounter();
+										console.log("载入成功", app);
+									} else {
+										$("#menu").click();
+										console.log("未添加歌曲");
+									}
 								});
 							};
 
