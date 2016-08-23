@@ -10,8 +10,6 @@
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-concat-css": "^2.3.0",
-    "gulp-jspm": "^0.5.12",
-    "gulp-minify": "0.0.12",
     "gulp-processhtml": "^1.1.0"
   },
   "jspm": {
