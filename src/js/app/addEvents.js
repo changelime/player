@@ -1,5 +1,6 @@
 import $ from "jquery";
 import dropFiles from "../lib/dropFiles";
+import audio from "../lib/audio";
 export default async function(app) {
 	return function() {
 		var events = app._events;
@@ -34,10 +35,10 @@ export default async function(app) {
 		$("#list-menu").on("mouseleave", null, events.leaveListMenu);
 		$("#list-menu").on("click", "li", events.clickListMenuItem);
 		//播放事件
-		app.audio.on("startload", events.startload);
-		app.audio.on("canplay", events.canplay);
-		app.audio.on("proceess", events.proceess);
-		app.audio.on("playend", events.playend);
+		audio.on("startload", events.startload);
+		audio.on("canplay", events.canplay);
+		audio.on("proceess", events.proceess);
+		audio.on("playend", events.playend);
 		//进度条
 		app.progressbar.on("pressBar", events.pressBar);
 		app.progressbar.on("stopDraggingFlag", events.stopDraggingFlag);

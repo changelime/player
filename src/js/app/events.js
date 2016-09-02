@@ -1,14 +1,15 @@
 import $ from "jquery";
 import levenshteinDistance from "../lib/levenshteinDistance";
+import audio from "../lib/audio";
 export default async function(app) {
 	var menuDisplayId = 0;
 	var ControlDisplayId = 0;
 	var self = {
 		pressBar : function(event){
-			app._commonFn.playByNowInOffset(app.progressbar.getPosition()*app.audio.getDuration());
+			app._commonFn.playByNowInOffset(app.progressbar.getPosition()*audio.getDuration());
 		},
 		stopDraggingFlag : function(event){
-			app._commonFn.playByNowInOffset(app.progressbar.getPosition()*app.audio.getDuration());
+			app._commonFn.playByNowInOffset(app.progressbar.getPosition()*audio.getDuration());
 		},
 		startload : function(event){
 			console.log("加载开始");
@@ -22,8 +23,8 @@ export default async function(app) {
 			app._commonFn.setCoverRunning();
 		},
 		proceess : function(event){
-			var time = app.audio.getCurrentime();
-			var duration = app.audio.getDuration();
+			var time = audio.getCurrentime();
+			var duration = audio.getDuration();
 			var dM = parseInt(duration/60);
 			var dS = parseInt(duration%60);
 			app.timeEl.text(`${time.m}:${time.s}/${dM}:${dS}`);
@@ -192,26 +193,30 @@ export default async function(app) {
 				if( input == "" )//还原
 				{
 					list.removeClass("hide");
+					app._commonFn.loadFileList();
 				}
 				else
 				{
 					list.removeClass("hide");
 					var mapedList = [].map.call(list, (item, index)=>{
-						item = $(item);
-						var name = item.text();
-						var distance = levenshteinDistance(input, name);
-						item.data("item-levenshteinDistance", distance);
+						var name = $(item).text();
+						var distance = levenshteinDistance(name, input);
+						item.distance = distance;
+						// item.data("item-levenshteinDistance", distance);
 						console.log("map", input, name, distance);
 						return item;
-					});
+					}).sort((a, b)=>{
+						return a.distance < b.distance;
+					});;
 					var hideList =  mapedList.filter((item)=>{
-						return !(+(item.data("item-levenshteinDistance")) > 0);
+						return !(item.distance > 0);
+					});
+					mapedList.forEach((item, index)=>{
+						$(item).css("order", index);
+						console.log("sorted", item.distance, $(item).text());
 					});
 					hideList.forEach((item)=>{
-						console.log("finish", +(item.data("item-levenshteinDistance")));
-					});
-					hideList.forEach((item)=>{
-						item.addClass("hide");
+						$(item).addClass("hide");
 					});
 					
 				}

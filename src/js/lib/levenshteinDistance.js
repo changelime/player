@@ -17,8 +17,8 @@ function levenshteinDistance(str1, str2) {
         }
         return matrix;
     }
-    var column = str1.length;
-    var row = str2.length;
+    var row = str1.length;
+    var column = str2.length;
     var matrix = genMatrix(row+1, column+1);
     if( column === 0 )
         return row;

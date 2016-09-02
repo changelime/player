@@ -2,6 +2,9 @@ import $ from "jquery";
 import ID3 from "../lib/id3";
 import stackBlur from "../lib/StackBlur";
 import randomImg from "../lib/randomImg";
+import audio from "../lib/audio";
+import fileDao from "../app/data/files";
+
 
 export default async function(app) {
 	var switchPlayIco = function switchPlayIco(){
@@ -22,7 +25,7 @@ export default async function(app) {
 		}
 	};
 	var play = function play(file, id){
-		app.audio.readAndPlay(file, id);
+		audio.readAndPlay(file, id);
 		updateCounter();
 		loadTag(file, (img, title, artisr)=>{
 			setCoverImg(img);
@@ -51,16 +54,16 @@ export default async function(app) {
 		console.log("上一曲");
 	};
 	var playById = function playById(id){
-		return app.files.getById(id).then((item)=>{
+		return fileDao.getById(id).then((item)=>{
 			play(item.file, id);
 			$(".playing").removeClass("playing");
 			$(`[data-item-id=${id}]`).addClass("playing");
 		});
 	};
 	// var playByName = function playByName(name){
-	// 	return app.files.getByName(name).then((item)=>{
+	// 	return fileDao.getByName(name).then((item)=>{
 	// 		var file = item.file;
-	// 		app.audio.readAndPlay(file);
+	// 		audio.readAndPlay(file);
 	// 		updateCounter();
 	// 		loadTag(file, (img, title, artisr)=>{
 	// 			setCoverImg(img);
@@ -97,53 +100,53 @@ export default async function(app) {
 	};
 	var playByNowInOffset = function playByNowInOffset(offset){
 		console.log(offset);
-		app.audio.play(offset);
+		audio.play(offset);
 	};
 	var playByIndex = function playByIndex(){
 		var id = getListItemIdByIndex(app.index);
-		if( app.audio.getSoundId() != id )//buffer里不是当前需要播放的音频
+		if( audio.getSoundId() != id )//buffer里不是当前需要播放的音频
 		{
 			playById(id);
 		}
 		else
 		{
-			app.audio.play();
+			audio.play();
 		}
 		setCoverRunning();
 		console.log(app.index, id);
 	};
 	var pause = function pause() {
-		app.audio.pause();
-		app._commonFn.setCoverPaused();
+		audio.pause();
+		setCoverPaused();
 	};
 	var removeByName = function removeByName(name){
 		console.log(name);
 	};
 	var removeById = function removeById(id){
 		console.log(id);
-		var playingId = app.audio.getSoundId();
+		var playingId = audio.getSoundId();
 		if( id == playingId )
 		{
 			alert("不能删除当前播放项");
 			return;
 		}
-		return app.files.removeById(id).then(()=>{
-			return app.files.getAll().then((files)=>{
+		return fileDao.removeById(id).then(()=>{
+			return fileDao.getAll().then((files)=>{
 				return Promise.all(files.map((file, index)=>{
 					file.index = index;
 					if( file.id == playingId )
 					{
 						app.index = index;
 					}
-					return app.files.update(file);
+					return fileDao.update(file);
 				}));
 			});
 		}).then(loadFileList);
 	};
 	var addFile = function addFile(files){
 		files = [...files];
-		return app.files.getLength().then((len)=>{
-			app.files.addAll(files.filter((file)=>file.type === "audio/mp3").map((file, index)=>{
+		return fileDao.getLength().then((len)=>{
+			fileDao.addAll(files.filter((file)=>file.type === "audio/mp3").map((file, index)=>{
 				return {
 					name: file.name,
 					file: file,
@@ -157,8 +160,8 @@ export default async function(app) {
 		$("#list").html("");
 	};
 	var loadFileList = function loadFileList(){
-		var playingId = app.audio.getSoundId();
-		return app.files.getAll().then((files)=>{
+		var playingId = audio.getSoundId();
+		return fileDao.getAll().then((files)=>{
 			if( files.length > 0 )
 			{
 				var list = $("#list");
