@@ -432,470 +432,14 @@
 
 (["1"], [], false, function($__System) {
 var require = this.require, exports = this.exports, module = this.module;
-$__System.register("2", ["3", "4", "5", "6", "7"], function (_export) {
-	var EventTarget, _get, _inherits, _createClass, _classCallCheck, Audio;
-
-	return {
-		setters: [function (_5) {
-			EventTarget = _5["default"];
-		}, function (_) {
-			_get = _["default"];
-		}, function (_2) {
-			_inherits = _2["default"];
-		}, function (_3) {
-			_createClass = _3["default"];
-		}, function (_4) {
-			_classCallCheck = _4["default"];
-		}],
-		execute: function () {
-			"use strict";
-
-			Audio = (function (_EventTarget) {
-				_inherits(Audio, _EventTarget);
-
-				function Audio() {
-					_classCallCheck(this, Audio);
-
-					_get(Object.getPrototypeOf(Audio.prototype), "constructor", this).call(this);
-					this._audioCtx = new AudioContext(); //实例化
-					this._buffer = null;
-					this._sourceNode = null;
-					this._scriptProcessorNode = null;
-					this._oldScriptProcessorNode = null;
-					this._oldSourceNode = null;
-					this._status = "init"; //ready,loading,playing,pause,init
-					this._currentTime = 0;
-					this._duration = 0;
-					this._oldTime = new Date();
-					this._m = 0;
-					this._s = 0;
-					this._curt = 0;
-					this._proceessTime = 0;
-					this._soundName = "";
-					this._soundId = "";
-				}
-
-				_createClass(Audio, [{
-					key: "_initNode",
-					value: function _initNode() {
-						//初始化音源节点
-						this._oldSourceNode = this._sourceNode; //备份旧节点
-						this._oldScriptProcessorNode = this._scriptProcessorNode;
-
-						this._sourceNode = this._audioCtx.createBufferSource(); //创建音源节点，用于读取音源
-						this._scriptProcessorNode = this._audioCtx.createScriptProcessor(4096, 2, 2);
-					}
-				}, {
-					key: "_disconnectOldNode",
-					value: function _disconnectOldNode() {
-						//断开旧节点，在播放新buffer时执行
-						try {
-							this._oldScriptProcessorNode.onaudioprocess = null;
-							this._oldSourceNode.onended = null;
-							this._oldSourceNode && this._oldSourceNode.disconnect(this._oldScriptProcessorNode); //旧节点断开连接
-							this._oldScriptProcessorNode && this._oldScriptProcessorNode.disconnect(this._audioCtx.destination); //旧节点断开连接				
-							delete this._oldSourceNode.buffer;
-							this._oldSourceNode = null;
-							this._oldScriptProcessorNode = null;
-						} catch (e) {
-							console.log(e);
-						}
-					}
-				}, {
-					key: "_disconnectNode",
-					value: function _disconnectNode() {
-						//断开当前节点，在暂停或停止时执行
-						try {
-							this._scriptProcessorNode.onaudioprocess = null;
-							this._sourceNode.onended = null;
-							this._sourceNode.disconnect(this._scriptProcessorNode); //旧节点断开连接
-							this._scriptProcessorNode.disconnect(this._audioCtx.destination); //旧节点断开连接						
-							delete this._sourceNode.buffer;
-							this._sourceNode = null;
-							this._scriptProcessorNode = null;
-						} catch (e) {
-							console.log(e);
-						}
-					}
-				}, {
-					key: "_connectNode",
-					value: function _connectNode() {
-						//连接节点，总是连接最新的节点
-						this._sourceNode.connect(this._scriptProcessorNode); //连接新节点
-						this._scriptProcessorNode.connect(this._audioCtx.destination); //连接新节点
-					}
-				}, {
-					key: "_refreshCurrentBuffer",
-					value: function _refreshCurrentBuffer(data, callback) {
-						//读取新音源到新音源节点
-						var self = this;
-						this._audioCtx.decodeAudioData(data, function (result) {
-							self._buffer = null;
-							self._buffer = result;
-							self._status = "ready";
-							callback();
-							console.log("刷新当前buffer完毕");
-						});
-					}
-				}, {
-					key: "_readFormCurrentBuffer",
-					value: function _readFormCurrentBuffer() {
-						//读取旧音源到新音频节点
-						this._initNode(); //新建音源节点
-						this._sourceNode.buffer = this._buffer; //当前音源赋值给新节点
-						this._duration = this._buffer.duration;
-						// this._buffer = null;
-						this._connectNode(); //重新连接
-						console.log("读取当前buffer完毕");
-					}
-				}, {
-					key: "getStatus",
-					value: function getStatus() {
-						return this._status;
-					}
-				}, {
-					key: "readFile",
-					value: function readFile(data, callback) {
-						this._status = "loading";
-						this._refreshCurrentBuffer(data, callback); //刷新当前buffer
-						console.log("新文件载入，开始刷新当前buffer");
-						this.emit({ type: "startload", message: event });
-					}
-				}, {
-					key: "play",
-					value: function play(offset) {
-						//buffer可能比现在播放的音频新
-						if (typeof offset === "number" || this._status === "pause" || this._status === "ready" || this._status === "stop") {
-							this._readFormCurrentBuffer(); //读取当前buffer中的音源
-							if (this._status === "pause" && typeof offset !== "number") //播放前是暂停状态，每个节点只能调用一次，重新读取音源
-								{
-									this._sourceNode.start(0, this._currentTime / 1000);
-								} else if (typeof offset === "number") {
-								this._disconnectOldNode(); //断开旧连接
-								this._currentTime = offset * 1000;
-								this._sourceNode.start(0, this._currentTime / 1000);
-							} else if (this._status === "stop") {
-								this._sourceNode.start(0); //播放前是停止状态
-							} else if (this._status === "ready") //播放前已经载入了一个新buffer
-									{
-										this._disconnectOldNode(); //断开旧连接
-										this._currentTime = 0;
-										this._sourceNode.start(0);
-									}
-							var self = this;
-							this._oldTime = new Date();
-							this._scriptProcessorNode.onaudioprocess = function (event) {
-								var inputBuffer = event.inputBuffer;
-								var outputBuffer = event.outputBuffer;
-								var now = Date.now();
-								var pastTime = now - self._oldTime;
-								for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-									var inputData = inputBuffer.getChannelData(channel);
-									var outputData = outputBuffer.getChannelData(channel);
-									for (var i = 0; i < inputBuffer.length; i++) {
-										outputData[i] = inputData[i];
-									}
-								}
-								self._currentTime += pastTime;
-								self._proceessTime += pastTime;
-								self._curt = self._currentTime / 1000;
-								self._m = parseInt(self._curt / 60);
-								self._s = parseInt(self._curt % 60);
-								self._oldTime = now;
-								if (self._proceessTime > 500) {
-									self._proceessTime = 0;
-									self.emit({ type: "proceess", message: event });
-								}
-							};
-							this._sourceNode.onended = function (event) {
-								self._scriptProcessorNode.onaudioprocess = null;
-								self._sourceNode.onended = null;
-								self._disconnectNode(); //断开连接
-								self._currentTime = 0;
-								self._status = "stop";
-								console.log("播放完毕");
-								self.emit({ type: "playend", message: event });
-							};
-							this._status = "playing";
-							this.emit({ type: "canplay", message: this });
-							console.log("播放当前buffer");
-						}
-					}
-				}, {
-					key: "getCurrentime",
-					value: function getCurrentime() {
-						var self = this;
-						return {
-							m: self._m,
-							s: self._s,
-							currentTime: self._curt
-						};
-					}
-				}, {
-					key: "pause",
-					value: function pause() {
-						if (this._status === "playing") {
-							this._sourceNode.stop(0); //停止
-							this._disconnectNode(); //断开连接
-							this._status = "pause";
-							console.log("已暂停，当前暂停时间计入播放时间线");
-						} else {
-							console.log("未处于播放状态，不能暂停");
-						}
-					}
-				}, {
-					key: "stop",
-					value: function stop() {
-						if (this._status === "playing") {
-							this._sourceNode.stop(0); //停止
-							this._disconnectNode(); //断开连接
-							this._currentTime = 0;
-							this._status = "stop";
-							console.log("已停止");
-						} else {
-							console.log("未处于播放状态，不能停止");
-						}
-					}
-				}, {
-					key: "getSoundName",
-					value: function getSoundName() {
-						return this._soundName;
-					}
-				}, {
-					key: "getSoundId",
-					value: function getSoundId() {
-						return this._Id;
-					}
-				}, {
-					key: "readAndPlay",
-					value: function readAndPlay(file, id) {
-						var self = this;
-						this._soundName = file.name;
-						this._Id = id;
-						this.stop();
-						var reader = new FileReader();
-						reader.readAsArrayBuffer(file);
-						reader.onload = function () {
-							self.readFile(reader.result, function () {
-								self.play();
-							});
-						};
-					}
-				}, {
-					key: "getDuration",
-					value: function getDuration() {
-						return this._duration;
-					}
-				}]);
-
-				return Audio;
-			})(EventTarget);
-
-			_export("default", new Audio());
-
-			// play.addEventListener("click", function(event){
-			// 	audioCtrl.play();
-			// },false);
-			// pause.addEventListener("click", function(event){
-			// 	audioCtrl.pause();
-			// },false);
-			// stop.addEventListener("click", function(event){
-			// 	audioCtrl.stop();
-			// },false);
-		}
-	};
-});
-$__System.registerDynamic("8", ["9", "a", "b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $export = $__require('9'),
-      core = $__require('a'),
-      fails = $__require('b');
-  module.exports = function(KEY, exec) {
-    var fn = (core.Object || {})[KEY] || Object[KEY],
-        exp = {};
-    exp[KEY] = exec(fn);
-    $export($export.S + $export.F * fails(function() {
-      fn(1);
-    }), 'Object', exp);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("c", ["d", "8"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var toIObject = $__require('d');
-  $__require('8')('getOwnPropertyDescriptor', function($getOwnPropertyDescriptor) {
-    return function getOwnPropertyDescriptor(it, key) {
-      return $getOwnPropertyDescriptor(toIObject(it), key);
-    };
-  });
-  return module.exports;
-});
-
-$__System.registerDynamic("e", ["f", "c"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $ = $__require('f');
-  $__require('c');
-  module.exports = function getOwnPropertyDescriptor(it, key) {
-    return $.getDesc(it, key);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("10", ["e"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('e'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("4", ["10"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var _Object$getOwnPropertyDescriptor = $__require('10')["default"];
-  exports["default"] = function get(_x, _x2, _x3) {
-    var _again = true;
-    _function: while (_again) {
-      var object = _x,
-          property = _x2,
-          receiver = _x3;
-      _again = false;
-      if (object === null)
-        object = Function.prototype;
-      var desc = _Object$getOwnPropertyDescriptor(object, property);
-      if (desc === undefined) {
-        var parent = Object.getPrototypeOf(object);
-        if (parent === null) {
-          return undefined;
-        } else {
-          _x = parent;
-          _x2 = property;
-          _x3 = receiver;
-          _again = true;
-          desc = parent = undefined;
-          continue _function;
-        }
-      } else if ("value" in desc) {
-        return desc.value;
-      } else {
-        var getter = desc.get;
-        if (getter === undefined) {
-          return undefined;
-        }
-        return getter.call(receiver);
-      }
-    }
-  };
-  exports.__esModule = true;
-  return module.exports;
-});
-
-$__System.registerDynamic("5", ["11", "12"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var _Object$create = $__require('11')["default"];
-  var _Object$setPrototypeOf = $__require('12')["default"];
-  exports["default"] = function(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }
-    subClass.prototype = _Object$create(superClass && superClass.prototype, {constructor: {
-        value: subClass,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }});
-    if (superClass)
-      _Object$setPrototypeOf ? _Object$setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-  };
-  exports.__esModule = true;
-  return module.exports;
-});
-
-$__System.register("3", ["6", "7"], function (_export) {
-	var _createClass, _classCallCheck, EventTarget;
-
-	return {
-		setters: [function (_) {
-			_createClass = _["default"];
-		}, function (_2) {
-			_classCallCheck = _2["default"];
-		}],
-		execute: function () {
-			"use strict";
-
-			EventTarget = (function () {
-				function EventTarget() {
-					_classCallCheck(this, EventTarget);
-
-					this.handlers = {};
-				}
-
-				_createClass(EventTarget, [{
-					key: "on",
-					value: function on(type, handler) {
-						if (typeof this.handlers[type] == "undefined") {
-							this.handlers[type] = []; //如果为空，则为第一次添加此事件，初始化为数组，以便添加多个事件
-						}
-						this.handlers[type].push(handler); //为该事件添加一个控制器
-					}
-				}, {
-					key: "emit",
-					value: function emit(event) {
-						if (!event.target) {
-							event.target = this;
-						}
-						if (this.handlers[event.type] instanceof Array) {
-							var handlers = this.handlers[event.type];
-							for (var i = 0, len = handlers.length; i < len; i++) handlers[i](event);
-						}
-					}
-				}, {
-					key: "removeHandler",
-					value: function removeHandler(type, handler) {
-						if (this.handlers[type] instanceof Array) {
-							var handlers = this.handlers[type];
-							for (var i = 0, len = handlers.length; i < len; i++) {
-								if (handlers[i] === handler) break;
-							}
-						}
-						handlers.splice(i, 1);
-					}
-				}]);
-
-				return EventTarget;
-			})();
-
-			_export("default", EventTarget);
-		}
-	};
-});
-$__System.register("13", ["3", "4", "5", "6", "7", "14"], function (_export) {
-	var EventTarget, _get, _inherits, _createClass, _classCallCheck, $, Progressbar;
+$__System.register("2", ["3", "4", "5", "6", "7", "8"], function (_export) {
+	var EventTarget, $, _get, _inherits, _createClass, _classCallCheck, Progressbar;
 
 	return {
 		setters: [function (_6) {
 			EventTarget = _6["default"];
+		}, function (_5) {
+			$ = _5["default"];
 		}, function (_) {
 			_get = _["default"];
 		}, function (_2) {
@@ -904,8 +448,6 @@ $__System.register("13", ["3", "4", "5", "6", "7", "14"], function (_export) {
 			_createClass = _3["default"];
 		}, function (_4) {
 			_classCallCheck = _4["default"];
-		}, function (_5) {
-			$ = _5["default"];
 		}],
 		execute: function () {
 			"use strict";
@@ -1006,7 +548,7 @@ $__System.register("13", ["3", "4", "5", "6", "7", "14"], function (_export) {
 		}
 	};
 });
-$__System.register("15", ["6", "7", "16"], function (_export) {
+$__System.register("9", ["7", "8", "a"], function (_export) {
 	var _createClass, _classCallCheck, _Promise, App;
 
 	return {
@@ -1014,8 +556,8 @@ $__System.register("15", ["6", "7", "16"], function (_export) {
 			_createClass = _["default"];
 		}, function (_2) {
 			_classCallCheck = _2["default"];
-		}, function (_3) {
-			_Promise = _3["default"];
+		}, function (_a) {
+			_Promise = _a["default"];
 		}],
 		execute: function () {
 			"use strict";
@@ -1070,572 +612,20 @@ $__System.register("15", ["6", "7", "16"], function (_export) {
 		}
 	};
 });
-$__System.registerDynamic("17", ["18", "19", "1a", "a"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var classof = $__require('18'),
-      ITERATOR = $__require('19')('iterator'),
-      Iterators = $__require('1a');
-  module.exports = $__require('a').isIterable = function(it) {
-    var O = Object(it);
-    return O[ITERATOR] !== undefined || '@@iterator' in O || Iterators.hasOwnProperty(classof(O));
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("1b", ["1c", "1d", "17"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  $__require('1c');
-  $__require('1d');
-  module.exports = $__require('17');
-  return module.exports;
-});
-
-$__System.registerDynamic("1e", ["1b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('1b'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("1f", ["20", "1e"], true, function($__require, exports, module) {
+$__System.registerDynamic("b", ["c", "d", "e", "f", "10", "11", "12", "13"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var _getIterator = $__require('20')["default"];
-  var _isIterable = $__require('1e')["default"];
-  exports["default"] = (function() {
-    function sliceIterator(arr, i) {
-      var _arr = [];
-      var _n = true;
-      var _d = false;
-      var _e = undefined;
-      try {
-        for (var _i = _getIterator(arr),
-            _s; !(_n = (_s = _i.next()).done); _n = true) {
-          _arr.push(_s.value);
-          if (i && _arr.length === i)
-            break;
-        }
-      } catch (err) {
-        _d = true;
-        _e = err;
-      } finally {
-        try {
-          if (!_n && _i["return"])
-            _i["return"]();
-        } finally {
-          if (_d)
-            throw _e;
-        }
-      }
-      return _arr;
-    }
-    return function(arr, i) {
-      if (Array.isArray(arr)) {
-        return arr;
-      } else if (_isIterable(Object(arr))) {
-        return sliceIterator(arr, i);
-      } else {
-        throw new TypeError("Invalid attempt to destructure non-iterable instance");
-      }
-    };
-  })();
-  exports.__esModule = true;
-  return module.exports;
-});
-
-$__System.registerDynamic("21", ["f", "22", "23", "b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $ = $__require('f'),
-      toObject = $__require('22'),
-      IObject = $__require('23');
-  module.exports = $__require('b')(function() {
-    var a = Object.assign,
-        A = {},
-        B = {},
-        S = Symbol(),
-        K = 'abcdefghijklmnopqrst';
-    A[S] = 7;
-    K.split('').forEach(function(k) {
-      B[k] = k;
-    });
-    return a({}, A)[S] != 7 || Object.keys(a({}, B)).join('') != K;
-  }) ? function assign(target, source) {
-    var T = toObject(target),
-        $$ = arguments,
-        $$len = $$.length,
-        index = 1,
-        getKeys = $.getKeys,
-        getSymbols = $.getSymbols,
-        isEnum = $.isEnum;
-    while ($$len > index) {
-      var S = IObject($$[index++]),
-          keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S),
-          length = keys.length,
-          j = 0,
-          key;
-      while (length > j)
-        if (isEnum.call(S, key = keys[j++]))
-          T[key] = S[key];
-    }
-    return T;
-  } : Object.assign;
-  return module.exports;
-});
-
-$__System.registerDynamic("24", ["9", "21"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $export = $__require('9');
-  $export($export.S + $export.F, 'Object', {assign: $__require('21')});
-  return module.exports;
-});
-
-$__System.registerDynamic("25", ["24", "a"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  $__require('24');
-  module.exports = $__require('a').Object.assign;
-  return module.exports;
-});
-
-$__System.registerDynamic("26", ["25"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('25'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.register("27", ["6", "7", "16", "20", "26", "1f"], function (_export) {
-	var _createClass, _classCallCheck, _Promise, _getIterator, _Object$assign, _slicedToArray, Indexing;
-
-	return {
-		setters: [function (_) {
-			_createClass = _["default"];
-		}, function (_2) {
-			_classCallCheck = _2["default"];
-		}, function (_4) {
-			_Promise = _4["default"];
-		}, function (_3) {
-			_getIterator = _3["default"];
-		}, function (_5) {
-			_Object$assign = _5["default"];
-		}, function (_f) {
-			_slicedToArray = _f["default"];
-		}],
-		execute: function () {
-			/**
-    * Indexing类，封装indexedDB.
-    */
-			"use strict";
-
-			Indexing = (function () {
-
-				/**
-     * 创建数据库对象
-     * @param {string} dbName - 数据库名.
-     * @param {Object[] | string[]} ObjectStores - 储存仓库.
-     * @param {string} [ObjectStores[].key=id] - 储存仓库索引.
-     * @param {string} ObjectStores[].name - 储存仓库名.
-     */
-
-				function Indexing(dbName, ObjectStores) {
-					_classCallCheck(this, Indexing);
-
-					this._db = null;
-					this._connect = null;
-					this._ObjectStores = ObjectStores;
-					this._set = {
-						dbName: dbName,
-						version: 1,
-						space: ObjectStores.map(function (ObjectStore) {
-							return ObjectStore instanceof Object ? ObjectStore.name : ObjectStore;
-						}),
-						authority: "readwrite"
-					};
-					this._store = {};
-					this._space = this._set.space;
-				}
-
-				/**
-     * 打开数据库连接
-     * @return {Promise} 数据库连接promise对象
-     */
-
-				_createClass(Indexing, [{
-					key: "open",
-					value: function open() {
-						return this._connectDB();
-					}
-
-					/**
-      * 建立数据库
-      * @param {IDBDatabase} - IDBDatabase对象
-      */
-				}, {
-					key: "_upgradeneeded",
-					value: function _upgradeneeded(db) {
-						var _iteratorNormalCompletion = true;
-						var _didIteratorError = false;
-						var _iteratorError = undefined;
-
-						try {
-							for (var _iterator = _getIterator(this._ObjectStores.entries()), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-								var _step$value = _slicedToArray(_step.value, 2);
-
-								var index = _step$value[0];
-								var ObjectStore = _step$value[1];
-
-								var isObject = ObjectStore instanceof Object;
-								db.createObjectStore(isObject ? ObjectStore.name : ObjectStore, { keyPath: isObject ? ObjectStore.key : "id" });
-							}
-						} catch (err) {
-							_didIteratorError = true;
-							_iteratorError = err;
-						} finally {
-							try {
-								if (!_iteratorNormalCompletion && _iterator["return"]) {
-									_iterator["return"]();
-								}
-							} finally {
-								if (_didIteratorError) {
-									throw _iteratorError;
-								}
-							}
-						}
-					}
-
-					/**
-      * 连接数据库，创建储存仓库操作对象
-      * @param {Promise} - Promise
-      */
-				}, {
-					key: "_connectDB",
-					value: function _connectDB() {
-						var _this = this;
-
-						return new _Promise(function (resolve, reject) {
-							var set = _this._set;
-							var self = _this;
-							_this._connect = indexedDB.open(set.dbName, set.version);
-							_this._connect.onsuccess = function (event) {
-								self._db = event.target.result;
-								var _iteratorNormalCompletion2 = true;
-								var _didIteratorError2 = false;
-								var _iteratorError2 = undefined;
-
-								try {
-									var _loop = function () {
-										var _step2$value = _slicedToArray(_step2.value, 2);
-
-										var index = _step2$value[0];
-										var spaceName = _step2$value[1];
-
-										self[spaceName] = {
-											get: function get(str) {
-												return new _Promise(function (resolve, reject) {
-													self._getStore(spaceName);
-													var request = self._store[spaceName].get(str);
-													request.onsuccess = function (event) {
-														var result = event.target.result;
-														if (result) {
-															resolve(result);
-														} else {
-															reject(new Error("not found"));
-														}
-													};
-												});
-											},
-											add: function add(o) {
-												return new _Promise(function (resolve, reject) {
-													self._getStore(spaceName);
-													o = _Object$assign({
-														id: self._genId()
-													}, o);
-													var request = self._store[spaceName].add(o);
-													request.onsuccess = function (event) {
-														resolve(event);
-													};
-													request.onerror = function (event) {
-														reject(new Error(event));
-													};
-												});
-											},
-											"delete": function _delete(str) {
-												self._getStore(spaceName);
-												return this.get(str).then(function (result) {
-													return new _Promise(function (resolve, reject) {
-														var request = self._store[spaceName]["delete"](str);
-														request.onsuccess = function (event) {
-															resolve(result);
-														};
-													});
-												});
-											},
-											put: function put(o) {
-												return new _Promise(function (resolve, reject) {
-													self._getStore(spaceName);
-													var request = self._store[spaceName].put(o);
-													request.onsuccess = function (event) {
-														resolve(event);
-													};
-													request.onerror = function (event) {
-														reject(new Error(event));
-													};
-												});
-											},
-											getAll: function getAll() {
-												return new _Promise(function (resolve, reject) {
-													self._getStore(spaceName);
-													var all = [];
-													var request = self._store[spaceName].openCursor();
-													request.onsuccess = function (event) {
-														var cursor = event.target.result;
-														if (cursor) {
-															all.push(cursor.value);
-															cursor["continue"]();
-														} else {
-															resolve(all);
-														}
-													};
-													request.onerror = function (event) {
-														reject(new Error(event));
-													};
-												});
-											}
-										};
-									};
-
-									for (var _iterator2 = _getIterator(self._space.entries()), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-										_loop();
-									}
-								} catch (err) {
-									_didIteratorError2 = true;
-									_iteratorError2 = err;
-								} finally {
-									try {
-										if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
-											_iterator2["return"]();
-										}
-									} finally {
-										if (_didIteratorError2) {
-											throw _iteratorError2;
-										}
-									}
-								}
-
-								resolve();
-								console.log("connect");
-							};
-							_this._connect.onupgradeneeded = function (event) {
-								if (!self._upgradeneeded) {
-									reject(new Error("upgradeneeded undefined"));
-								}
-								self._db = event.target.result;
-								self._upgradeneeded(self._db);
-								console.log("onupgradeneeded");
-							};
-							_this._connect.onerror = function (err) {
-								reject(err);
-							};
-						});
-					}
-
-					/**
-      * 生成id
-      * @return {string} - id
-      */
-				}, {
-					key: "_genId",
-					value: function _genId() {
-						var base64 = btoa("" + Math.random() + new Date().toGMTString());
-						var str = base64.replace(/=/g, "").substr(0, 32).toLocaleLowerCase();
-						return str;
-					}
-
-					/**
-      * 按照储存仓库名设置当前操作仓库
-      * @param {string} - 储存仓库名
-      */
-				}, {
-					key: "_getStore",
-					value: function _getStore(spaceName) {
-						var set = this._set;
-						this._store[spaceName] = this._db.transaction(spaceName, set.authority).objectStore(spaceName);
-					}
-				}]);
-
-				return Indexing;
-			})();
-
-			_export("default", Indexing);
-		}
-	};
-});
-$__System.register("28", ["14", "27", "29"], function (_export) {
-	var $, Indexing, _regeneratorRuntime;
-
-	return {
-		setters: [function (_2) {
-			$ = _2["default"];
-		}, function (_3) {
-			Indexing = _3["default"];
-		}, function (_) {
-			_regeneratorRuntime = _["default"];
-		}],
-		execute: function () {
-			"use strict";
-
-			_export("default", function callee$0$0(app) {
-				var db;
-				return _regeneratorRuntime.async(function callee$0$0$(context$1$0) {
-					while (1) switch (context$1$0.prev = context$1$0.next) {
-						case 0:
-							db = new Indexing("player", ["files", "setting"]);
-							context$1$0.next = 3;
-							return _regeneratorRuntime.awrap(db.open());
-
-						case 3:
-							console.log(db);
-							return context$1$0.abrupt("return", db);
-
-						case 5:
-						case "end":
-							return context$1$0.stop();
-					}
-				}, null, this);
-			});
-		}
-	};
-});
-$__System.register("2a", ["16", "29"], function (_export) {
-	var _Promise, _regeneratorRuntime;
-
-	return {
-		setters: [function (_2) {
-			_Promise = _2["default"];
-		}, function (_) {
-			_regeneratorRuntime = _["default"];
-		}],
-		execute: function () {
-			"use strict";
-
-			_export("default", function callee$0$0(app) {
-				var db;
-				return _regeneratorRuntime.async(function callee$0$0$(context$1$0) {
-					while (1) switch (context$1$0.prev = context$1$0.next) {
-						case 0:
-							db = app.db;
-							return context$1$0.abrupt("return", {
-								add: function add(file) {
-									return new _Promise(function (resolve, reject) {
-										db.files.get(file.id).then(function (result) {
-											reject(new Error("already has"));
-											console.log("already has");
-										})["catch"](function (err) {
-											db.files.add(file).then(function (result) {
-												resolve(result);
-												console.log("add success");
-											})["catch"](function (err) {
-												reject(err);
-												console.log("add fail");
-											});
-										});
-									});
-								},
-								addAll: function addAll(files) {
-									var _this = this;
-
-									return _Promise.all(files.map(function (file) {
-										return _this.add(file);
-									}));
-								},
-								getById: function getById(id) {
-									return db.files.get(id);
-								},
-								removeById: function removeById(id) {
-									return db.files["delete"](id);
-								},
-								update: function update(o) {
-									return db.files.put(o);
-								},
-								getByName: function getByName(name) {
-									return db.files.getAll().then(function (result) {
-										return result.filter(function (item) {
-											return item.name === name;
-										})[0];
-									});
-								},
-								getAll: function getAll() {
-									return db.files.getAll();
-								},
-								getLength: function getLength(callback) {
-									return db.files.getAll().then(function (result) {
-										return result.length;
-									});
-								}
-							});
-
-						case 2:
-						case "end":
-							return context$1$0.stop();
-					}
-				}, null, this);
-			});
-		}
-	};
-});
-$__System.registerDynamic("22", ["2b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var defined = $__require('2b');
-  module.exports = function(it) {
-    return Object(defined(it));
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("2c", ["2d", "9", "22", "2e", "2f", "30", "31", "32"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var ctx = $__require('2d'),
-      $export = $__require('9'),
-      toObject = $__require('22'),
-      call = $__require('2e'),
-      isArrayIter = $__require('2f'),
-      toLength = $__require('30'),
-      getIterFn = $__require('31');
-  $export($export.S + $export.F * !$__require('32')(function(iter) {
+  var ctx = $__require('c'),
+      $export = $__require('d'),
+      toObject = $__require('e'),
+      call = $__require('f'),
+      isArrayIter = $__require('10'),
+      toLength = $__require('11'),
+      getIterFn = $__require('12');
+  $export($export.S + $export.F * !$__require('13')(function(iter) {
     Array.from(iter);
   }), 'Array', {from: function from(arrayLike) {
       var O = toObject(arrayLike),
@@ -1668,36 +658,36 @@ $__System.registerDynamic("2c", ["2d", "9", "22", "2e", "2f", "30", "31", "32"],
   return module.exports;
 });
 
-$__System.registerDynamic("33", ["1d", "2c", "a"], true, function($__require, exports, module) {
+$__System.registerDynamic("14", ["15", "b", "16"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  $__require('1d');
-  $__require('2c');
-  module.exports = $__require('a').Array.from;
+  $__require('15');
+  $__require('b');
+  module.exports = $__require('16').Array.from;
   return module.exports;
 });
 
-$__System.registerDynamic("34", ["33"], true, function($__require, exports, module) {
+$__System.registerDynamic("17", ["14"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   module.exports = {
-    "default": $__require('33'),
+    "default": $__require('14'),
     __esModule: true
   };
   return module.exports;
 });
 
-$__System.registerDynamic("35", ["34"], true, function($__require, exports, module) {
+$__System.registerDynamic("18", ["17"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var _Array$from = $__require('34')["default"];
+  var _Array$from = $__require('17')["default"];
   exports["default"] = function(arr) {
     if (Array.isArray(arr)) {
       for (var i = 0,
@@ -1712,115 +702,7 @@ $__System.registerDynamic("35", ["34"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("36", ["37", "31", "a"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var anObject = $__require('37'),
-      get = $__require('31');
-  module.exports = $__require('a').getIterator = function(it) {
-    var iterFn = get(it);
-    if (typeof iterFn != 'function')
-      throw TypeError(it + ' is not iterable!');
-    return anObject(iterFn.call(it));
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("38", ["1c", "1d", "36"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  $__require('1c');
-  $__require('1d');
-  module.exports = $__require('36');
-  return module.exports;
-});
-
-$__System.registerDynamic("20", ["38"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('38'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("39", ["f"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $ = $__require('f');
-  module.exports = function defineProperty(it, key, desc) {
-    return $.setDesc(it, key, desc);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("3a", ["39"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('39'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("6", ["3a"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var _Object$defineProperty = $__require('3a')["default"];
-  exports["default"] = (function() {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor)
-          descriptor.writable = true;
-        _Object$defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-    return function(Constructor, protoProps, staticProps) {
-      if (protoProps)
-        defineProperties(Constructor.prototype, protoProps);
-      if (staticProps)
-        defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  })();
-  exports.__esModule = true;
-  return module.exports;
-});
-
-$__System.registerDynamic("7", [], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  exports["default"] = function(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-  exports.__esModule = true;
-  return module.exports;
-});
-
-$__System.register("3b", ["6", "7"], function (_export) {
+$__System.register("19", ["7", "8"], function (_export) {
     var _createClass, _classCallCheck, StringUtils, BinaryFile, ID3v1, ID3v2, ID4, ID3;
 
     function addVbscript() {
@@ -3181,7 +2063,7 @@ $__System.register("3b", ["6", "7"], function (_export) {
         }
     };
 });
-$__System.register("3c", [], function (_export) {
+$__System.register("1a", [], function (_export) {
 	/*
  
  StackBlur - a fast almost Gaussian Blur For Canvas
@@ -3474,7 +2356,7 @@ $__System.register("3c", [], function (_export) {
 		}
 	};
 });
-$__System.register("3d", [], function (_export) {
+$__System.register("1b", [], function (_export) {
 	"use strict";
 
 	var getColors, randomImg;
@@ -3540,26 +2422,585 @@ $__System.register("3d", [], function (_export) {
 		}
 	};
 });
-$__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], function (_export) {
-	var $, _Promise, _getIterator, _regeneratorRuntime, _toConsumableArray, ID3, stackBlur, randomImg;
+$__System.registerDynamic("1c", ["1d", "1e", "1f", "16"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var classof = $__require('1d'),
+      ITERATOR = $__require('1e')('iterator'),
+      Iterators = $__require('1f');
+  module.exports = $__require('16').isIterable = function(it) {
+    var O = Object(it);
+    return O[ITERATOR] !== undefined || '@@iterator' in O || Iterators.hasOwnProperty(classof(O));
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("20", ["21", "15", "1c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  $__require('21');
+  $__require('15');
+  module.exports = $__require('1c');
+  return module.exports;
+});
+
+$__System.registerDynamic("22", ["20"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('20'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("23", ["24", "22"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var _getIterator = $__require('24')["default"];
+  var _isIterable = $__require('22')["default"];
+  exports["default"] = (function() {
+    function sliceIterator(arr, i) {
+      var _arr = [];
+      var _n = true;
+      var _d = false;
+      var _e = undefined;
+      try {
+        for (var _i = _getIterator(arr),
+            _s; !(_n = (_s = _i.next()).done); _n = true) {
+          _arr.push(_s.value);
+          if (i && _arr.length === i)
+            break;
+        }
+      } catch (err) {
+        _d = true;
+        _e = err;
+      } finally {
+        try {
+          if (!_n && _i["return"])
+            _i["return"]();
+        } finally {
+          if (_d)
+            throw _e;
+        }
+      }
+      return _arr;
+    }
+    return function(arr, i) {
+      if (Array.isArray(arr)) {
+        return arr;
+      } else if (_isIterable(Object(arr))) {
+        return sliceIterator(arr, i);
+      } else {
+        throw new TypeError("Invalid attempt to destructure non-iterable instance");
+      }
+    };
+  })();
+  exports.__esModule = true;
+  return module.exports;
+});
+
+$__System.registerDynamic("25", ["26", "12", "16"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var anObject = $__require('26'),
+      get = $__require('12');
+  module.exports = $__require('16').getIterator = function(it) {
+    var iterFn = get(it);
+    if (typeof iterFn != 'function')
+      throw TypeError(it + ' is not iterable!');
+    return anObject(iterFn.call(it));
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("27", ["21", "15", "25"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  $__require('21');
+  $__require('15');
+  module.exports = $__require('25');
+  return module.exports;
+});
+
+$__System.registerDynamic("24", ["27"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('27'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("e", ["28"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var defined = $__require('28');
+  module.exports = function(it) {
+    return Object(defined(it));
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("29", ["2a", "e", "2b", "2c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $ = $__require('2a'),
+      toObject = $__require('e'),
+      IObject = $__require('2b');
+  module.exports = $__require('2c')(function() {
+    var a = Object.assign,
+        A = {},
+        B = {},
+        S = Symbol(),
+        K = 'abcdefghijklmnopqrst';
+    A[S] = 7;
+    K.split('').forEach(function(k) {
+      B[k] = k;
+    });
+    return a({}, A)[S] != 7 || Object.keys(a({}, B)).join('') != K;
+  }) ? function assign(target, source) {
+    var T = toObject(target),
+        $$ = arguments,
+        $$len = $$.length,
+        index = 1,
+        getKeys = $.getKeys,
+        getSymbols = $.getSymbols,
+        isEnum = $.isEnum;
+    while ($$len > index) {
+      var S = IObject($$[index++]),
+          keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S),
+          length = keys.length,
+          j = 0,
+          key;
+      while (length > j)
+        if (isEnum.call(S, key = keys[j++]))
+          T[key] = S[key];
+    }
+    return T;
+  } : Object.assign;
+  return module.exports;
+});
+
+$__System.registerDynamic("2d", ["d", "29"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $export = $__require('d');
+  $export($export.S + $export.F, 'Object', {assign: $__require('29')});
+  return module.exports;
+});
+
+$__System.registerDynamic("2e", ["2d", "16"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  $__require('2d');
+  module.exports = $__require('16').Object.assign;
+  return module.exports;
+});
+
+$__System.registerDynamic("2f", ["2e"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('2e'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.register("30", ["7", "8", "23", "24", "a", "2f"], function (_export) {
+	var _createClass, _classCallCheck, _slicedToArray, _getIterator, _Promise, _Object$assign, Indexing;
 
 	return {
-		setters: [function (_5) {
-			$ = _5["default"];
+		setters: [function (_) {
+			_createClass = _["default"];
+		}, function (_2) {
+			_classCallCheck = _2["default"];
 		}, function (_3) {
-			_Promise = _3["default"];
+			_slicedToArray = _3["default"];
 		}, function (_4) {
 			_getIterator = _4["default"];
-		}, function (_2) {
-			_regeneratorRuntime = _2["default"];
+		}, function (_a) {
+			_Promise = _a["default"];
+		}, function (_f) {
+			_Object$assign = _f["default"];
+		}],
+		execute: function () {
+			/**
+    * Indexing类，封装indexedDB.
+    */
+			"use strict";
+
+			Indexing = (function () {
+
+				/**
+     * 创建数据库对象
+     * @param {string} dbName - 数据库名.
+     * @param {Object[] | string[]} ObjectStores - 储存仓库.
+     * @param {string} [ObjectStores[].key=id] - 储存仓库索引.
+     * @param {string} ObjectStores[].name - 储存仓库名.
+     */
+
+				function Indexing(dbName, ObjectStores) {
+					_classCallCheck(this, Indexing);
+
+					this._db = null;
+					this._connect = null;
+					this._ObjectStores = ObjectStores;
+					this._set = {
+						dbName: dbName,
+						version: 1,
+						space: ObjectStores.map(function (ObjectStore) {
+							return ObjectStore instanceof Object ? ObjectStore.name : ObjectStore;
+						}),
+						authority: "readwrite"
+					};
+					this._store = {};
+					this._space = this._set.space;
+				}
+
+				/**
+     * 打开数据库连接
+     * @return {Promise} 数据库连接promise对象
+     */
+
+				_createClass(Indexing, [{
+					key: "open",
+					value: function open() {
+						return this._connectDB();
+					}
+
+					/**
+      * 建立数据库
+      * @param {IDBDatabase} - IDBDatabase对象
+      */
+				}, {
+					key: "_upgradeneeded",
+					value: function _upgradeneeded(db) {
+						var _iteratorNormalCompletion = true;
+						var _didIteratorError = false;
+						var _iteratorError = undefined;
+
+						try {
+							for (var _iterator = _getIterator(this._ObjectStores.entries()), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+								var _step$value = _slicedToArray(_step.value, 2);
+
+								var index = _step$value[0];
+								var ObjectStore = _step$value[1];
+
+								var isObject = ObjectStore instanceof Object;
+								db.createObjectStore(isObject ? ObjectStore.name : ObjectStore, { keyPath: isObject ? ObjectStore.key : "id" });
+							}
+						} catch (err) {
+							_didIteratorError = true;
+							_iteratorError = err;
+						} finally {
+							try {
+								if (!_iteratorNormalCompletion && _iterator["return"]) {
+									_iterator["return"]();
+								}
+							} finally {
+								if (_didIteratorError) {
+									throw _iteratorError;
+								}
+							}
+						}
+					}
+
+					/**
+      * 连接数据库，创建储存仓库操作对象
+      * @param {Promise} - Promise
+      */
+				}, {
+					key: "_connectDB",
+					value: function _connectDB() {
+						var _this = this;
+
+						return new _Promise(function (resolve, reject) {
+							var set = _this._set;
+							var self = _this;
+							_this._connect = indexedDB.open(set.dbName, set.version);
+							_this._connect.onsuccess = function (event) {
+								self._db = event.target.result;
+								var _iteratorNormalCompletion2 = true;
+								var _didIteratorError2 = false;
+								var _iteratorError2 = undefined;
+
+								try {
+									var _loop = function () {
+										var _step2$value = _slicedToArray(_step2.value, 2);
+
+										var index = _step2$value[0];
+										var spaceName = _step2$value[1];
+
+										self[spaceName] = {
+											get: function get(str) {
+												return new _Promise(function (resolve, reject) {
+													self._getStore(spaceName);
+													var request = self._store[spaceName].get(str);
+													request.onsuccess = function (event) {
+														var result = event.target.result;
+														if (result) {
+															resolve(result);
+														} else {
+															reject(new Error("not found"));
+														}
+													};
+												});
+											},
+											add: function add(o) {
+												return new _Promise(function (resolve, reject) {
+													self._getStore(spaceName);
+													o = _Object$assign({
+														id: self._genId()
+													}, o);
+													var request = self._store[spaceName].add(o);
+													request.onsuccess = function (event) {
+														resolve(event);
+													};
+													request.onerror = function (event) {
+														reject(new Error(event));
+													};
+												});
+											},
+											"delete": function _delete(str) {
+												self._getStore(spaceName);
+												return this.get(str).then(function (result) {
+													return new _Promise(function (resolve, reject) {
+														var request = self._store[spaceName]["delete"](str);
+														request.onsuccess = function (event) {
+															resolve(result);
+														};
+													});
+												});
+											},
+											put: function put(o) {
+												return new _Promise(function (resolve, reject) {
+													self._getStore(spaceName);
+													var request = self._store[spaceName].put(o);
+													request.onsuccess = function (event) {
+														resolve(event);
+													};
+													request.onerror = function (event) {
+														reject(new Error(event));
+													};
+												});
+											},
+											getAll: function getAll() {
+												return new _Promise(function (resolve, reject) {
+													self._getStore(spaceName);
+													var all = [];
+													var request = self._store[spaceName].openCursor();
+													request.onsuccess = function (event) {
+														var cursor = event.target.result;
+														if (cursor) {
+															all.push(cursor.value);
+															cursor["continue"]();
+														} else {
+															resolve(all);
+														}
+													};
+													request.onerror = function (event) {
+														reject(new Error(event));
+													};
+												});
+											}
+										};
+									};
+
+									for (var _iterator2 = _getIterator(self._space.entries()), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+										_loop();
+									}
+								} catch (err) {
+									_didIteratorError2 = true;
+									_iteratorError2 = err;
+								} finally {
+									try {
+										if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+											_iterator2["return"]();
+										}
+									} finally {
+										if (_didIteratorError2) {
+											throw _iteratorError2;
+										}
+									}
+								}
+
+								resolve();
+								console.log("connect");
+							};
+							_this._connect.onupgradeneeded = function (event) {
+								if (!self._upgradeneeded) {
+									reject(new Error("upgradeneeded undefined"));
+								}
+								self._db = event.target.result;
+								self._upgradeneeded(self._db);
+								console.log("onupgradeneeded");
+							};
+							_this._connect.onerror = function (err) {
+								reject(err);
+							};
+						});
+					}
+
+					/**
+      * 生成id
+      * @return {string} - id
+      */
+				}, {
+					key: "_genId",
+					value: function _genId() {
+						var base64 = btoa("" + Math.random() + new Date().toGMTString());
+						var str = base64.replace(/=/g, "").substr(0, 32).toLocaleLowerCase();
+						return str;
+					}
+
+					/**
+      * 按照储存仓库名设置当前操作仓库
+      * @param {string} - 储存仓库名
+      */
+				}, {
+					key: "_getStore",
+					value: function _getStore(spaceName) {
+						var set = this._set;
+						this._store[spaceName] = this._db.transaction(spaceName, set.authority).objectStore(spaceName);
+					}
+				}]);
+
+				return Indexing;
+			})();
+
+			_export("default", Indexing);
+		}
+	};
+});
+$__System.register("31", ["30"], function (_export) {
+  "use strict";
+
+  var Indexing;
+  return {
+    setters: [function (_) {
+      Indexing = _["default"];
+    }],
+    execute: function () {
+      _export("default", new Indexing("player", ["files", "setting"]));
+    }
+  };
+});
+$__System.register("32", ["31", "a"], function (_export) {
+	var db, _Promise;
+
+	return {
+		setters: [function (_) {
+			db = _["default"];
+		}, function (_a) {
+			_Promise = _a["default"];
+		}],
+		execute: function () {
+			"use strict";
+
+			_export("default", {
+				add: function add(file) {
+					return new _Promise(function (resolve, reject) {
+						db.files.get(file.id).then(function (result) {
+							reject(new Error("already has"));
+							console.log("already has");
+						})["catch"](function (err) {
+							db.files.add(file).then(function (result) {
+								resolve(result);
+								console.log("add success");
+							})["catch"](function (err) {
+								reject(err);
+								console.log("add fail");
+							});
+						});
+					});
+				},
+				addAll: function addAll(files) {
+					var _this = this;
+
+					return _Promise.all(files.map(function (file) {
+						return _this.add(file);
+					}));
+				},
+				getById: function getById(id) {
+					return db.files.get(id);
+				},
+				removeById: function removeById(id) {
+					return db.files["delete"](id);
+				},
+				update: function update(o) {
+					return db.files.put(o);
+				},
+				getByName: function getByName(name) {
+					return db.files.getAll().then(function (result) {
+						return result.filter(function (item) {
+							return item.name === name;
+						})[0];
+					});
+				},
+				getAll: function getAll() {
+					return db.files.getAll();
+				},
+				getLength: function getLength(callback) {
+					return db.files.getAll().then(function (result) {
+						return result.length;
+					});
+				}
+			});
+		}
+	};
+});
+$__System.register("33", ["4", "18", "19", "24", "32", "34", "35", "a", "1a", "1b"], function (_export) {
+	var $, _toConsumableArray, ID3, _getIterator, fileDao, audio, _regeneratorRuntime, _Promise, stackBlur, randomImg;
+
+	return {
+		setters: [function (_4) {
+			$ = _4["default"];
 		}, function (_) {
 			_toConsumableArray = _["default"];
+		}, function (_5) {
+			ID3 = _5["default"];
+		}, function (_3) {
+			_getIterator = _3["default"];
+		}, function (_7) {
+			fileDao = _7["default"];
+		}, function (_6) {
+			audio = _6["default"];
+		}, function (_2) {
+			_regeneratorRuntime = _2["default"];
+		}, function (_a) {
+			_Promise = _a["default"];
+		}, function (_a2) {
+			stackBlur = _a2["default"];
 		}, function (_b) {
-			ID3 = _b["default"];
-		}, function (_c) {
-			stackBlur = _c["default"];
-		}, function (_d) {
-			randomImg = _d["default"];
+			randomImg = _b["default"];
 		}],
 		execute: function () {
 			"use strict";
@@ -3585,7 +3026,7 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 							};
 
 							play = function play(file, id) {
-								app.audio.readAndPlay(file, id);
+								audio.readAndPlay(file, id);
 								updateCounter();
 								loadTag(file, function (img, title, artisr) {
 									setCoverImg(img);
@@ -3613,7 +3054,7 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 							};
 
 							playById = function playById(id) {
-								return app.files.getById(id).then(function (item) {
+								return fileDao.getById(id).then(function (item) {
 									play(item.file, id);
 									$(".playing").removeClass("playing");
 									$("[data-item-id=" + id + "]").addClass("playing");
@@ -3652,24 +3093,24 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 
 							playByNowInOffset = function playByNowInOffset(offset) {
 								console.log(offset);
-								app.audio.play(offset);
+								audio.play(offset);
 							};
 
 							playByIndex = function playByIndex() {
 								var id = getListItemIdByIndex(app.index);
-								if (app.audio.getSoundId() != id) //buffer里不是当前需要播放的音频
+								if (audio.getSoundId() != id) //buffer里不是当前需要播放的音频
 									{
 										playById(id);
 									} else {
-									app.audio.play();
+									audio.play();
 								}
 								setCoverRunning();
 								console.log(app.index, id);
 							};
 
 							pause = function pause() {
-								app.audio.pause();
-								app._commonFn.setCoverPaused();
+								audio.pause();
+								setCoverPaused();
 							};
 
 							removeByName = function removeByName(name) {
@@ -3678,19 +3119,19 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 
 							removeById = function removeById(id) {
 								console.log(id);
-								var playingId = app.audio.getSoundId();
+								var playingId = audio.getSoundId();
 								if (id == playingId) {
 									alert("不能删除当前播放项");
 									return;
 								}
-								return app.files.removeById(id).then(function () {
-									return app.files.getAll().then(function (files) {
+								return fileDao.removeById(id).then(function () {
+									return fileDao.getAll().then(function (files) {
 										return _Promise.all(files.map(function (file, index) {
 											file.index = index;
 											if (file.id == playingId) {
 												app.index = index;
 											}
-											return app.files.update(file);
+											return fileDao.update(file);
 										}));
 									});
 								}).then(loadFileList);
@@ -3698,8 +3139,8 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 
 							addFile = function addFile(files) {
 								files = [].concat(_toConsumableArray(files));
-								return app.files.getLength().then(function (len) {
-									app.files.addAll(files.filter(function (file) {
+								return fileDao.getLength().then(function (len) {
+									fileDao.addAll(files.filter(function (file) {
 										return file.type === "audio/mp3";
 									}).map(function (file, index) {
 										return {
@@ -3716,8 +3157,8 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 							};
 
 							loadFileList = function loadFileList() {
-								var playingId = app.audio.getSoundId();
-								return app.files.getAll().then(function (files) {
+								var playingId = audio.getSoundId();
+								return fileDao.getAll().then(function (files) {
 									if (files.length > 0) {
 										var list = $("#list");
 										cleanFileList();
@@ -3823,9 +3264,9 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 });
 
 // var playByName = function playByName(name){
-// 	return app.files.getByName(name).then((item)=>{
+// 	return fileDao.getByName(name).then((item)=>{
 // 		var file = item.file;
-// 		app.audio.readAndPlay(file);
+// 		audio.readAndPlay(file);
 // 		updateCounter();
 // 		loadTag(file, (img, title, artisr)=>{
 // 			setCoverImg(img);
@@ -3835,7 +3276,7 @@ $__System.register("3e", ["14", "16", "20", "29", "35", "3b", "3c", "3d"], funct
 // 		});
 // 	});
 // };
-$__System.register("3f", [], function (_export) {
+$__System.register("36", [], function (_export) {
     "use strict";
 
     function levenshteinDistance(str1, str2) {
@@ -3854,8 +3295,8 @@ $__System.register("3f", [], function (_export) {
             }
             return matrix;
         }
-        var column = str1.length;
-        var row = str2.length;
+        var row = str1.length;
+        var column = str2.length;
         var matrix = genMatrix(row + 1, column + 1);
         if (column === 0) return row;
         if (row === 0) return column;
@@ -3879,16 +3320,18 @@ $__System.register("3f", [], function (_export) {
         }
     };
 });
-$__System.register("40", ["14", "29", "3f"], function (_export) {
-	var $, _regeneratorRuntime, levenshteinDistance;
+$__System.register("37", ["4", "34", "35", "36"], function (_export) {
+	var $, audio, _regeneratorRuntime, levenshteinDistance;
 
 	return {
 		setters: [function (_2) {
 			$ = _2["default"];
+		}, function (_4) {
+			audio = _4["default"];
 		}, function (_) {
 			_regeneratorRuntime = _["default"];
-		}, function (_f) {
-			levenshteinDistance = _f["default"];
+		}, function (_3) {
+			levenshteinDistance = _3["default"];
 		}],
 		execute: function () {
 			"use strict";
@@ -3902,10 +3345,10 @@ $__System.register("40", ["14", "29", "3f"], function (_export) {
 							ControlDisplayId = 0;
 							self = {
 								pressBar: function pressBar(event) {
-									app._commonFn.playByNowInOffset(app.progressbar.getPosition() * app.audio.getDuration());
+									app._commonFn.playByNowInOffset(app.progressbar.getPosition() * audio.getDuration());
 								},
 								stopDraggingFlag: function stopDraggingFlag(event) {
-									app._commonFn.playByNowInOffset(app.progressbar.getPosition() * app.audio.getDuration());
+									app._commonFn.playByNowInOffset(app.progressbar.getPosition() * audio.getDuration());
 								},
 								startload: function startload(event) {
 									console.log("加载开始");
@@ -3919,8 +3362,8 @@ $__System.register("40", ["14", "29", "3f"], function (_export) {
 									app._commonFn.setCoverRunning();
 								},
 								proceess: function proceess(event) {
-									var time = app.audio.getCurrentime();
-									var duration = app.audio.getDuration();
+									var time = audio.getCurrentime();
+									var duration = audio.getDuration();
 									var dM = parseInt(duration / 60);
 									var dS = parseInt(duration % 60);
 									app.timeEl.text(time.m + ":" + time.s + "/" + dM + ":" + dS);
@@ -4078,24 +3521,28 @@ $__System.register("40", ["14", "29", "3f"], function (_export) {
 										if (input == "") //还原
 											{
 												list.removeClass("hide");
+												app._commonFn.loadFileList();
 											} else {
 											list.removeClass("hide");
 											var mapedList = [].map.call(list, function (item, index) {
-												item = $(item);
-												var name = item.text();
-												var distance = levenshteinDistance(input, name);
-												item.data("item-levenshteinDistance", distance);
+												var name = $(item).text();
+												var distance = levenshteinDistance(name, input);
+												item.distance = distance;
+												// item.data("item-levenshteinDistance", distance);
 												console.log("map", input, name, distance);
 												return item;
-											});
+											}).sort(function (a, b) {
+												return a.distance < b.distance;
+											});;
 											var hideList = mapedList.filter(function (item) {
-												return !(+item.data("item-levenshteinDistance") > 0);
+												return !(item.distance > 0);
+											});
+											mapedList.forEach(function (item, index) {
+												$(item).css("order", index);
+												console.log("sorted", item.distance, $(item).text());
 											});
 											hideList.forEach(function (item) {
-												console.log("finish", +item.data("item-levenshteinDistance"));
-											});
-											hideList.forEach(function (item) {
-												item.addClass("hide");
+												$(item).addClass("hide");
 											});
 										}
 										console.log(input);
@@ -4113,13 +3560,13 @@ $__System.register("40", ["14", "29", "3f"], function (_export) {
 		}
 	};
 });
-$__System.registerDynamic("41", ["f", "d"], true, function($__require, exports, module) {
+$__System.registerDynamic("38", ["2a", "39"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $ = $__require('f'),
-      toIObject = $__require('d');
+  var $ = $__require('2a'),
+      toIObject = $__require('39');
   module.exports = function(object, el) {
     var O = toIObject(object),
         keys = $.getKeys(O),
@@ -4133,13 +3580,13 @@ $__System.registerDynamic("41", ["f", "d"], true, function($__require, exports, 
   return module.exports;
 });
 
-$__System.registerDynamic("42", ["d", "f"], true, function($__require, exports, module) {
+$__System.registerDynamic("3a", ["39", "2a"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var toIObject = $__require('d'),
-      getNames = $__require('f').getNames,
+  var toIObject = $__require('39'),
+      getNames = $__require('2a').getNames,
       toString = {}.toString;
   var windowNames = typeof window == 'object' && Object.getOwnPropertyNames ? Object.getOwnPropertyNames(window) : [];
   var getWindowNames = function(it) {
@@ -4157,12 +3604,12 @@ $__System.registerDynamic("42", ["d", "f"], true, function($__require, exports, 
   return module.exports;
 });
 
-$__System.registerDynamic("43", ["f"], true, function($__require, exports, module) {
+$__System.registerDynamic("3b", ["2a"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $ = $__require('f');
+  var $ = $__require('2a');
   module.exports = function(it) {
     var keys = $.getKeys(it),
         getSymbols = $.getSymbols;
@@ -4180,42 +3627,42 @@ $__System.registerDynamic("43", ["f"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("44", ["45"], true, function($__require, exports, module) {
+$__System.registerDynamic("3c", ["3d"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var cof = $__require('45');
+  var cof = $__require('3d');
   module.exports = Array.isArray || function(arg) {
     return cof(arg) == 'Array';
   };
   return module.exports;
 });
 
-$__System.registerDynamic("46", ["f", "47", "48", "49", "9", "4a", "b", "4b", "4c", "4d", "19", "41", "42", "43", "44", "37", "d", "4e", "4f"], true, function($__require, exports, module) {
+$__System.registerDynamic("3e", ["2a", "3f", "40", "41", "d", "42", "2c", "43", "44", "45", "1e", "38", "3a", "3b", "3c", "26", "39", "46", "47"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $ = $__require('f'),
-      global = $__require('47'),
-      has = $__require('48'),
-      DESCRIPTORS = $__require('49'),
-      $export = $__require('9'),
-      redefine = $__require('4a'),
-      $fails = $__require('b'),
-      shared = $__require('4b'),
-      setToStringTag = $__require('4c'),
-      uid = $__require('4d'),
-      wks = $__require('19'),
-      keyOf = $__require('41'),
-      $names = $__require('42'),
-      enumKeys = $__require('43'),
-      isArray = $__require('44'),
-      anObject = $__require('37'),
-      toIObject = $__require('d'),
-      createDesc = $__require('4e'),
+  var $ = $__require('2a'),
+      global = $__require('3f'),
+      has = $__require('40'),
+      DESCRIPTORS = $__require('41'),
+      $export = $__require('d'),
+      redefine = $__require('42'),
+      $fails = $__require('2c'),
+      shared = $__require('43'),
+      setToStringTag = $__require('44'),
+      uid = $__require('45'),
+      wks = $__require('1e'),
+      keyOf = $__require('38'),
+      $names = $__require('3a'),
+      enumKeys = $__require('3b'),
+      isArray = $__require('3c'),
+      anObject = $__require('26'),
+      toIObject = $__require('39'),
+      createDesc = $__require('46'),
       getDesc = $.getDesc,
       setDesc = $.setDesc,
       _create = $.create,
@@ -4362,7 +3809,7 @@ $__System.registerDynamic("46", ["f", "47", "48", "49", "9", "4a", "b", "4b", "4
     $.setDescs = $defineProperties;
     $.getNames = $names.get = $getOwnPropertyNames;
     $.getSymbols = $getOwnPropertySymbols;
-    if (DESCRIPTORS && !$__require('4f')) {
+    if (DESCRIPTORS && !$__require('47')) {
       redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
     }
   }
@@ -4402,95 +3849,39 @@ $__System.registerDynamic("46", ["f", "47", "48", "49", "9", "4a", "b", "4b", "4
   return module.exports;
 });
 
-$__System.registerDynamic("50", ["46", "51", "a"], true, function($__require, exports, module) {
+$__System.registerDynamic("48", ["3e", "49", "16"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  $__require('46');
-  $__require('51');
-  module.exports = $__require('a').Symbol;
+  $__require('3e');
+  $__require('49');
+  module.exports = $__require('16').Symbol;
   return module.exports;
 });
 
-$__System.registerDynamic("52", ["50"], true, function($__require, exports, module) {
+$__System.registerDynamic("4a", ["48"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  module.exports = $__require('50');
+  module.exports = $__require('48');
   return module.exports;
 });
 
-$__System.registerDynamic("53", ["52"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('52'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("54", ["f"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $ = $__require('f');
-  module.exports = function create(P, D) {
-    return $.create(P, D);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("11", ["54"], true, function($__require, exports, module) {
+$__System.registerDynamic("4b", ["4a"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   module.exports = {
-    "default": $__require('54'),
+    "default": $__require('4a'),
     __esModule: true
   };
   return module.exports;
 });
 
-$__System.registerDynamic("55", ["9", "56"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var $export = $__require('9');
-  $export($export.S, 'Object', {setPrototypeOf: $__require('56').set});
-  return module.exports;
-});
-
-$__System.registerDynamic("57", ["55", "a"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  $__require('55');
-  module.exports = $__require('a').Object.setPrototypeOf;
-  return module.exports;
-});
-
-$__System.registerDynamic("12", ["57"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = {
-    "default": $__require('57'),
-    __esModule: true
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("51", [], true, function($__require, exports, module) {
+$__System.registerDynamic("49", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4499,13 +3890,13 @@ $__System.registerDynamic("51", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("58", ["59", "2b"], true, function($__require, exports, module) {
+$__System.registerDynamic("4c", ["4d", "28"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var toInteger = $__require('59'),
-      defined = $__require('2b');
+  var toInteger = $__require('4d'),
+      defined = $__require('28');
   module.exports = function(TO_STRING) {
     return function(that, pos) {
       var s = String(defined(that)),
@@ -4522,14 +3913,14 @@ $__System.registerDynamic("58", ["59", "2b"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("1d", ["58", "5a"], true, function($__require, exports, module) {
+$__System.registerDynamic("15", ["4c", "4e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $at = $__require('58')(true);
-  $__require('5a')(String, 'String', function(iterated) {
+  var $at = $__require('4c')(true);
+  $__require('4e')(String, 'String', function(iterated) {
     this._t = String(iterated);
     this._i = 0;
   }, function() {
@@ -4551,7 +3942,7 @@ $__System.registerDynamic("1d", ["58", "5a"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("5b", [], true, function($__require, exports, module) {
+$__System.registerDynamic("4f", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4560,7 +3951,7 @@ $__System.registerDynamic("5b", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("5c", [], true, function($__require, exports, module) {
+$__System.registerDynamic("50", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4574,55 +3965,17 @@ $__System.registerDynamic("5c", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("23", ["45"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var cof = $__require('45');
-  module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it) {
-    return cof(it) == 'String' ? it.split('') : Object(it);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("2b", [], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = function(it) {
-    if (it == undefined)
-      throw TypeError("Can't call method on  " + it);
-    return it;
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("d", ["23", "2b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var IObject = $__require('23'),
-      defined = $__require('2b');
-  module.exports = function(it) {
-    return IObject(defined(it));
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("5d", ["f", "4e", "4c", "5e", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("51", ["2a", "46", "44", "52", "1e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $ = $__require('f'),
-      descriptor = $__require('4e'),
-      setToStringTag = $__require('4c'),
+  var $ = $__require('2a'),
+      descriptor = $__require('46'),
+      setToStringTag = $__require('44'),
       IteratorPrototype = {};
-  $__require('5e')(IteratorPrototype, $__require('19')('iterator'), function() {
+  $__require('52')(IteratorPrototype, $__require('1e')('iterator'), function() {
     return this;
   });
   module.exports = function(Constructor, NAME, next) {
@@ -4632,22 +3985,22 @@ $__System.registerDynamic("5d", ["f", "4e", "4c", "5e", "19"], true, function($_
   return module.exports;
 });
 
-$__System.registerDynamic("5a", ["4f", "9", "4a", "5e", "48", "1a", "5d", "4c", "f", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("4e", ["47", "d", "42", "52", "40", "1f", "51", "44", "2a", "1e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var LIBRARY = $__require('4f'),
-      $export = $__require('9'),
-      redefine = $__require('4a'),
-      hide = $__require('5e'),
-      has = $__require('48'),
-      Iterators = $__require('1a'),
-      $iterCreate = $__require('5d'),
-      setToStringTag = $__require('4c'),
-      getProto = $__require('f').getProto,
-      ITERATOR = $__require('19')('iterator'),
+  var LIBRARY = $__require('47'),
+      $export = $__require('d'),
+      redefine = $__require('42'),
+      hide = $__require('52'),
+      has = $__require('40'),
+      Iterators = $__require('1f'),
+      $iterCreate = $__require('51'),
+      setToStringTag = $__require('44'),
+      getProto = $__require('2a').getProto,
+      ITERATOR = $__require('1e')('iterator'),
       BUGGY = !([].keys && 'next' in [].keys()),
       FF_ITERATOR = '@@iterator',
       KEYS = 'keys',
@@ -4718,17 +4071,17 @@ $__System.registerDynamic("5a", ["4f", "9", "4a", "5e", "48", "1a", "5d", "4c", 
   return module.exports;
 });
 
-$__System.registerDynamic("5f", ["5b", "5c", "1a", "d", "5a"], true, function($__require, exports, module) {
+$__System.registerDynamic("53", ["4f", "50", "1f", "39", "4e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var addToUnscopables = $__require('5b'),
-      step = $__require('5c'),
-      Iterators = $__require('1a'),
-      toIObject = $__require('d');
-  module.exports = $__require('5a')(Array, 'Array', function(iterated, kind) {
+  var addToUnscopables = $__require('4f'),
+      step = $__require('50'),
+      Iterators = $__require('1f'),
+      toIObject = $__require('39');
+  module.exports = $__require('4e')(Array, 'Array', function(iterated, kind) {
     this._t = toIObject(iterated);
     this._i = 0;
     this._k = kind;
@@ -4753,18 +4106,18 @@ $__System.registerDynamic("5f", ["5b", "5c", "1a", "d", "5a"], true, function($_
   return module.exports;
 });
 
-$__System.registerDynamic("1c", ["5f", "1a"], true, function($__require, exports, module) {
+$__System.registerDynamic("21", ["53", "1f"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  $__require('5f');
-  var Iterators = $__require('1a');
+  $__require('53');
+  var Iterators = $__require('1f');
   Iterators.NodeList = Iterators.HTMLCollection = Iterators.Array;
   return module.exports;
 });
 
-$__System.registerDynamic("4f", [], true, function($__require, exports, module) {
+$__System.registerDynamic("47", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4773,56 +4126,7 @@ $__System.registerDynamic("4f", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("9", ["47", "a", "2d"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var global = $__require('47'),
-      core = $__require('a'),
-      ctx = $__require('2d'),
-      PROTOTYPE = 'prototype';
-  var $export = function(type, name, source) {
-    var IS_FORCED = type & $export.F,
-        IS_GLOBAL = type & $export.G,
-        IS_STATIC = type & $export.S,
-        IS_PROTO = type & $export.P,
-        IS_BIND = type & $export.B,
-        IS_WRAP = type & $export.W,
-        exports = IS_GLOBAL ? core : core[name] || (core[name] = {}),
-        target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE],
-        key,
-        own,
-        out;
-    if (IS_GLOBAL)
-      source = name;
-    for (key in source) {
-      own = !IS_FORCED && target && key in target;
-      if (own && key in exports)
-        continue;
-      out = own ? target[key] : source[key];
-      exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key] : IS_BIND && own ? ctx(out, global) : IS_WRAP && target[key] == out ? (function(C) {
-        var F = function(param) {
-          return this instanceof C ? new C(param) : C(param);
-        };
-        F[PROTOTYPE] = C[PROTOTYPE];
-        return F;
-      })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-      if (IS_PROTO)
-        (exports[PROTOTYPE] || (exports[PROTOTYPE] = {}))[key] = out;
-    }
-  };
-  $export.F = 1;
-  $export.G = 2;
-  $export.S = 4;
-  $export.P = 8;
-  $export.B = 16;
-  $export.W = 32;
-  module.exports = $export;
-  return module.exports;
-});
-
-$__System.registerDynamic("60", [], true, function($__require, exports, module) {
+$__System.registerDynamic("54", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4835,12 +4139,12 @@ $__System.registerDynamic("60", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("2e", ["37"], true, function($__require, exports, module) {
+$__System.registerDynamic("f", ["26"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var anObject = $__require('37');
+  var anObject = $__require('26');
   module.exports = function(iterator, fn, value, entries) {
     try {
       return entries ? fn(anObject(value)[0], value[1]) : fn(value);
@@ -4854,13 +4158,13 @@ $__System.registerDynamic("2e", ["37"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("2f", ["1a", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("10", ["1f", "1e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var Iterators = $__require('1a'),
-      ITERATOR = $__require('19')('iterator'),
+  var Iterators = $__require('1f'),
+      ITERATOR = $__require('1e')('iterator'),
       ArrayProto = Array.prototype;
   module.exports = function(it) {
     return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
@@ -4868,7 +4172,7 @@ $__System.registerDynamic("2f", ["1a", "19"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("59", [], true, function($__require, exports, module) {
+$__System.registerDynamic("4d", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4881,12 +4185,12 @@ $__System.registerDynamic("59", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("30", ["59"], true, function($__require, exports, module) {
+$__System.registerDynamic("11", ["4d"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var toInteger = $__require('59'),
+  var toInteger = $__require('4d'),
       min = Math.min;
   module.exports = function(it) {
     return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0;
@@ -4894,13 +4198,13 @@ $__System.registerDynamic("30", ["59"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("18", ["45", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("1d", ["3d", "1e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var cof = $__require('45'),
-      TAG = $__require('19')('toStringTag'),
+  var cof = $__require('3d'),
+      TAG = $__require('1e')('toStringTag'),
       ARG = cof(function() {
         return arguments;
       }()) == 'Arguments';
@@ -4913,7 +4217,7 @@ $__System.registerDynamic("18", ["45", "19"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("1a", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1f", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -4922,32 +4226,32 @@ $__System.registerDynamic("1a", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("31", ["18", "19", "1a", "a"], true, function($__require, exports, module) {
+$__System.registerDynamic("12", ["1d", "1e", "1f", "16"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var classof = $__require('18'),
-      ITERATOR = $__require('19')('iterator'),
-      Iterators = $__require('1a');
-  module.exports = $__require('a').getIteratorMethod = function(it) {
+  var classof = $__require('1d'),
+      ITERATOR = $__require('1e')('iterator'),
+      Iterators = $__require('1f');
+  module.exports = $__require('16').getIteratorMethod = function(it) {
     if (it != undefined)
       return it[ITERATOR] || it['@@iterator'] || Iterators[classof(it)];
   };
   return module.exports;
 });
 
-$__System.registerDynamic("61", ["2d", "2e", "2f", "37", "30", "31"], true, function($__require, exports, module) {
+$__System.registerDynamic("55", ["c", "f", "10", "26", "11", "12"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var ctx = $__require('2d'),
-      call = $__require('2e'),
-      isArrayIter = $__require('2f'),
-      anObject = $__require('37'),
-      toLength = $__require('30'),
-      getIterFn = $__require('31');
+  var ctx = $__require('c'),
+      call = $__require('f'),
+      isArrayIter = $__require('10'),
+      anObject = $__require('26'),
+      toLength = $__require('11'),
+      getIterFn = $__require('12');
   module.exports = function(iterable, entries, fn, that) {
     var iterFn = getIterFn(iterable),
         f = ctx(fn, that, entries ? 2 : 1),
@@ -4969,43 +4273,7 @@ $__System.registerDynamic("61", ["2d", "2e", "2f", "37", "30", "31"], true, func
   return module.exports;
 });
 
-$__System.registerDynamic("56", ["f", "62", "37", "2d"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var getDesc = $__require('f').getDesc,
-      isObject = $__require('62'),
-      anObject = $__require('37');
-  var check = function(O, proto) {
-    anObject(O);
-    if (!isObject(proto) && proto !== null)
-      throw TypeError(proto + ": can't set as prototype!");
-  };
-  module.exports = {
-    set: Object.setPrototypeOf || ('__proto__' in {} ? function(test, buggy, set) {
-      try {
-        set = $__require('2d')(Function.call, getDesc(Object.prototype, '__proto__').set, 2);
-        set(test, []);
-        buggy = !(test instanceof Array);
-      } catch (e) {
-        buggy = true;
-      }
-      return function setPrototypeOf(O, proto) {
-        check(O, proto);
-        if (buggy)
-          O.__proto__ = proto;
-        else
-          set(O, proto);
-        return O;
-      };
-    }({}, false) : undefined),
-    check: check
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("63", [], true, function($__require, exports, module) {
+$__System.registerDynamic("56", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -5016,28 +4284,14 @@ $__System.registerDynamic("63", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("37", ["62"], true, function($__require, exports, module) {
+$__System.registerDynamic("57", ["26", "58", "1e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var isObject = $__require('62');
-  module.exports = function(it) {
-    if (!isObject(it))
-      throw TypeError(it + ' is not an object!');
-    return it;
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("64", ["37", "65", "19"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var anObject = $__require('37'),
-      aFunction = $__require('65'),
-      SPECIES = $__require('19')('species');
+  var anObject = $__require('26'),
+      aFunction = $__require('58'),
+      SPECIES = $__require('1e')('species');
   module.exports = function(O, D) {
     var C = anObject(O).constructor,
         S;
@@ -5046,51 +4300,7 @@ $__System.registerDynamic("64", ["37", "65", "19"], true, function($__require, e
   return module.exports;
 });
 
-$__System.registerDynamic("65", [], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = function(it) {
-    if (typeof it != 'function')
-      throw TypeError(it + ' is not a function!');
-    return it;
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("2d", ["65"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var aFunction = $__require('65');
-  module.exports = function(fn, that, length) {
-    aFunction(fn);
-    if (that === undefined)
-      return fn;
-    switch (length) {
-      case 1:
-        return function(a) {
-          return fn.call(that, a);
-        };
-      case 2:
-        return function(a, b) {
-          return fn.call(that, a, b);
-        };
-      case 3:
-        return function(a, b, c) {
-          return fn.call(that, a, b, c);
-        };
-    }
-    return function() {
-      return fn.apply(that, arguments);
-    };
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("66", [], true, function($__require, exports, module) {
+$__System.registerDynamic("59", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -5114,33 +4324,22 @@ $__System.registerDynamic("66", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("67", ["47"], true, function($__require, exports, module) {
+$__System.registerDynamic("5a", ["3f"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  module.exports = $__require('47').document && document.documentElement;
+  module.exports = $__require('3f').document && document.documentElement;
   return module.exports;
 });
 
-$__System.registerDynamic("62", [], true, function($__require, exports, module) {
+$__System.registerDynamic("5b", ["5c", "3f"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  module.exports = function(it) {
-    return typeof it === 'object' ? it !== null : typeof it === 'function';
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("68", ["62", "47"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var isObject = $__require('62'),
-      document = $__require('47').document,
+  var isObject = $__require('5c'),
+      document = $__require('3f').document,
       is = isObject(document) && isObject(document.createElement);
   module.exports = function(it) {
     return is ? document.createElement(it) : {};
@@ -5148,17 +4347,17 @@ $__System.registerDynamic("68", ["62", "47"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("69", ["2d", "66", "67", "68", "47", "45", "6a"], true, function($__require, exports, module) {
+$__System.registerDynamic("5d", ["c", "59", "5a", "5b", "3f", "3d", "5e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   (function(process) {
-    var ctx = $__require('2d'),
-        invoke = $__require('66'),
-        html = $__require('67'),
-        cel = $__require('68'),
-        global = $__require('47'),
+    var ctx = $__require('c'),
+        invoke = $__require('59'),
+        html = $__require('5a'),
+        cel = $__require('5b'),
+        global = $__require('3f'),
         process = global.process,
         setTask = global.setImmediate,
         clearTask = global.clearImmediate,
@@ -5195,7 +4394,7 @@ $__System.registerDynamic("69", ["2d", "66", "67", "68", "47", "45", "6a"], true
       clearTask = function clearImmediate(id) {
         delete queue[id];
       };
-      if ($__require('45')(process) == 'process') {
+      if ($__require('3d')(process) == 'process') {
         defer = function(id) {
           process.nextTick(ctx(run, id, 1));
         };
@@ -5226,34 +4425,22 @@ $__System.registerDynamic("69", ["2d", "66", "67", "68", "47", "45", "6a"], true
       set: setTask,
       clear: clearTask
     };
-  })($__require('6a'));
+  })($__require('5e'));
   return module.exports;
 });
 
-$__System.registerDynamic("45", [], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var toString = {}.toString;
-  module.exports = function(it) {
-    return toString.call(it).slice(8, -1);
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("6b", ["47", "69", "45", "6a"], true, function($__require, exports, module) {
+$__System.registerDynamic("5f", ["3f", "5d", "3d", "5e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   (function(process) {
-    var global = $__require('47'),
-        macrotask = $__require('69').set,
+    var global = $__require('3f'),
+        macrotask = $__require('5d').set,
         Observer = global.MutationObserver || global.WebKitMutationObserver,
         process = global.process,
         Promise = global.Promise,
-        isNode = $__require('45')(process) == 'process',
+        isNode = $__require('3d')(process) == 'process',
         head,
         last,
         notify;
@@ -5313,11 +4500,11 @@ $__System.registerDynamic("6b", ["47", "69", "45", "6a"], true, function($__requ
       }
       last = task;
     };
-  })($__require('6a'));
+  })($__require('5e'));
   return module.exports;
 });
 
-$__System.registerDynamic("4e", [], true, function($__require, exports, module) {
+$__System.registerDynamic("46", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -5333,14 +4520,14 @@ $__System.registerDynamic("4e", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("5e", ["f", "4e", "49"], true, function($__require, exports, module) {
+$__System.registerDynamic("52", ["2a", "46", "41"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $ = $__require('f'),
-      createDesc = $__require('4e');
-  module.exports = $__require('49') ? function(object, key, value) {
+  var $ = $__require('2a'),
+      createDesc = $__require('46');
+  module.exports = $__require('41') ? function(object, key, value) {
     return $.setDesc(object, key, createDesc(1, value));
   } : function(object, key, value) {
     object[key] = value;
@@ -5349,21 +4536,21 @@ $__System.registerDynamic("5e", ["f", "4e", "49"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("4a", ["5e"], true, function($__require, exports, module) {
+$__System.registerDynamic("42", ["52"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  module.exports = $__require('5e');
+  module.exports = $__require('52');
   return module.exports;
 });
 
-$__System.registerDynamic("6c", ["4a"], true, function($__require, exports, module) {
+$__System.registerDynamic("60", ["42"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var redefine = $__require('4a');
+  var redefine = $__require('42');
   module.exports = function(target, src) {
     for (var key in src)
       redefine(target, key, src[key]);
@@ -5372,7 +4559,7 @@ $__System.registerDynamic("6c", ["4a"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("48", [], true, function($__require, exports, module) {
+$__System.registerDynamic("40", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -5384,14 +4571,14 @@ $__System.registerDynamic("48", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("4c", ["f", "48", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("44", ["2a", "40", "1e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var def = $__require('f').setDesc,
-      has = $__require('48'),
-      TAG = $__require('19')('toStringTag');
+  var def = $__require('2a').setDesc,
+      has = $__require('40'),
+      TAG = $__require('1e')('toStringTag');
   module.exports = function(it, tag, stat) {
     if (it && !has(it = stat ? it : it.prototype, TAG))
       def(it, TAG, {
@@ -5402,48 +4589,12 @@ $__System.registerDynamic("4c", ["f", "48", "19"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("f", [], true, function($__require, exports, module) {
+$__System.registerDynamic("41", ["2c"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var $Object = Object;
-  module.exports = {
-    create: $Object.create,
-    getProto: $Object.getPrototypeOf,
-    isEnum: {}.propertyIsEnumerable,
-    getDesc: $Object.getOwnPropertyDescriptor,
-    setDesc: $Object.defineProperty,
-    setDescs: $Object.defineProperties,
-    getKeys: $Object.keys,
-    getNames: $Object.getOwnPropertyNames,
-    getSymbols: $Object.getOwnPropertySymbols,
-    each: [].forEach
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("b", [], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = function(exec) {
-    try {
-      return !!exec();
-    } catch (e) {
-      return true;
-    }
-  };
-  return module.exports;
-});
-
-$__System.registerDynamic("49", ["b"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  module.exports = !$__require('b')(function() {
+  module.exports = !$__require('2c')(function() {
     return Object.defineProperty({}, 'a', {get: function() {
         return 7;
       }}).a != 7;
@@ -5451,16 +4602,16 @@ $__System.registerDynamic("49", ["b"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("6d", ["a", "f", "49", "19"], true, function($__require, exports, module) {
+$__System.registerDynamic("61", ["16", "2a", "41", "1e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var core = $__require('a'),
-      $ = $__require('f'),
-      DESCRIPTORS = $__require('49'),
-      SPECIES = $__require('19')('species');
+  var core = $__require('16'),
+      $ = $__require('2a'),
+      DESCRIPTORS = $__require('41'),
+      SPECIES = $__require('1e')('species');
   module.exports = function(KEY) {
     var C = core[KEY];
     if (DESCRIPTORS && C && !C[SPECIES])
@@ -5474,12 +4625,12 @@ $__System.registerDynamic("6d", ["a", "f", "49", "19"], true, function($__requir
   return module.exports;
 });
 
-$__System.registerDynamic("4b", ["47"], true, function($__require, exports, module) {
+$__System.registerDynamic("43", ["3f"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var global = $__require('47'),
+  var global = $__require('3f'),
       SHARED = '__core-js_shared__',
       store = global[SHARED] || (global[SHARED] = {});
   module.exports = function(key) {
@@ -5488,7 +4639,7 @@ $__System.registerDynamic("4b", ["47"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("4d", [], true, function($__require, exports, module) {
+$__System.registerDynamic("45", [], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -5501,37 +4652,26 @@ $__System.registerDynamic("4d", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("47", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1e", ["43", "45", "3f"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var global = module.exports = typeof window != 'undefined' && window.Math == Math ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
-  if (typeof __g == 'number')
-    __g = global;
-  return module.exports;
-});
-
-$__System.registerDynamic("19", ["4b", "4d", "47"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var store = $__require('4b')('wks'),
-      uid = $__require('4d'),
-      Symbol = $__require('47').Symbol;
+  var store = $__require('43')('wks'),
+      uid = $__require('45'),
+      Symbol = $__require('3f').Symbol;
   module.exports = function(name) {
     return store[name] || (store[name] = Symbol && Symbol[name] || (Symbol || uid)('Symbol.' + name));
   };
   return module.exports;
 });
 
-$__System.registerDynamic("32", ["19"], true, function($__require, exports, module) {
+$__System.registerDynamic("13", ["1e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var ITERATOR = $__require('19')('iterator'),
+  var ITERATOR = $__require('1e')('iterator'),
       SAFE_CLOSING = false;
   try {
     var riter = [7][ITERATOR]();
@@ -5562,29 +4702,29 @@ $__System.registerDynamic("32", ["19"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "65", "60", "61", "56", "63", "19", "64", "6b", "49", "6c", "4c", "6d", "a", "32", "6a"], true, function($__require, exports, module) {
+$__System.registerDynamic("62", ["2a", "47", "3f", "c", "1d", "d", "5c", "26", "58", "54", "55", "63", "56", "1e", "57", "5f", "41", "60", "44", "61", "16", "13", "5e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   (function(process) {
     'use strict';
-    var $ = $__require('f'),
-        LIBRARY = $__require('4f'),
-        global = $__require('47'),
-        ctx = $__require('2d'),
-        classof = $__require('18'),
-        $export = $__require('9'),
-        isObject = $__require('62'),
-        anObject = $__require('37'),
-        aFunction = $__require('65'),
-        strictNew = $__require('60'),
-        forOf = $__require('61'),
-        setProto = $__require('56').set,
-        same = $__require('63'),
-        SPECIES = $__require('19')('species'),
-        speciesConstructor = $__require('64'),
-        asap = $__require('6b'),
+    var $ = $__require('2a'),
+        LIBRARY = $__require('47'),
+        global = $__require('3f'),
+        ctx = $__require('c'),
+        classof = $__require('1d'),
+        $export = $__require('d'),
+        isObject = $__require('5c'),
+        anObject = $__require('26'),
+        aFunction = $__require('58'),
+        strictNew = $__require('54'),
+        forOf = $__require('55'),
+        setProto = $__require('63').set,
+        same = $__require('56'),
+        SPECIES = $__require('1e')('species'),
+        speciesConstructor = $__require('57'),
+        asap = $__require('5f'),
         PROMISE = 'Promise',
         process = global.process,
         isNode = classof(process) == 'process',
@@ -5615,7 +4755,7 @@ $__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "
         if (!(P2.resolve(5).then(function() {}) instanceof P2)) {
           works = false;
         }
-        if (works && $__require('49')) {
+        if (works && $__require('41')) {
           var thenableThenGotten = false;
           P.resolve($.setDesc({}, 'then', {get: function() {
               thenableThenGotten = true;
@@ -5793,7 +4933,7 @@ $__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "
           $reject.call(record, err);
         }
       };
-      $__require('6c')(P.prototype, {
+      $__require('60')(P.prototype, {
         then: function then(onFulfilled, onRejected) {
           var reaction = new PromiseCapability(speciesConstructor(this, P)),
               promise = reaction.promise,
@@ -5813,9 +4953,9 @@ $__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "
       });
     }
     $export($export.G + $export.W + $export.F * !USE_NATIVE, {Promise: P});
-    $__require('4c')(P, PROMISE);
-    $__require('6d')(PROMISE);
-    Wrapper = $__require('a')[PROMISE];
+    $__require('44')(P, PROMISE);
+    $__require('61')(PROMISE);
+    Wrapper = $__require('16')[PROMISE];
     $export($export.S + $export.F * !USE_NATIVE, PROMISE, {reject: function reject(r) {
         var capability = new PromiseCapability(this),
             $$reject = capability.reject;
@@ -5830,7 +4970,7 @@ $__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "
         $$resolve(x);
         return capability.promise;
       }});
-    $export($export.S + $export.F * !(USE_NATIVE && $__require('32')(function(iter) {
+    $export($export.S + $export.F * !(USE_NATIVE && $__require('13')(function(iter) {
       P.all(iter)['catch'](function() {});
     })), PROMISE, {
       all: function all(iterable) {
@@ -5875,57 +5015,46 @@ $__System.registerDynamic("6e", ["f", "4f", "47", "2d", "18", "9", "62", "37", "
         return capability.promise;
       }
     });
-  })($__require('6a'));
+  })($__require('5e'));
   return module.exports;
 });
 
-$__System.registerDynamic("a", [], true, function($__require, exports, module) {
+$__System.registerDynamic("64", ["49", "15", "21", "62", "16"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var core = module.exports = {version: '1.2.6'};
-  if (typeof __e == 'number')
-    __e = core;
+  $__require('49');
+  $__require('15');
+  $__require('21');
+  $__require('62');
+  module.exports = $__require('16').Promise;
   return module.exports;
 });
 
-$__System.registerDynamic("6f", ["51", "1d", "1c", "6e", "a"], true, function($__require, exports, module) {
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  $__require('51');
-  $__require('1d');
-  $__require('1c');
-  $__require('6e');
-  module.exports = $__require('a').Promise;
-  return module.exports;
-});
-
-$__System.registerDynamic("16", ["6f"], true, function($__require, exports, module) {
+$__System.registerDynamic("a", ["64"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   module.exports = {
-    "default": $__require('6f'),
+    "default": $__require('64'),
     __esModule: true
   };
   return module.exports;
 });
 
-$__System.registerDynamic("70", ["53", "11", "12", "16", "6a"], true, function($__require, exports, module) {
+$__System.registerDynamic("65", ["4b", "66", "67", "a", "5e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
   (function(process) {
     "use strict";
-    var _Symbol = $__require('53')["default"];
-    var _Object$create = $__require('11')["default"];
-    var _Object$setPrototypeOf = $__require('12')["default"];
-    var _Promise = $__require('16')["default"];
+    var _Symbol = $__require('4b')["default"];
+    var _Object$create = $__require('66')["default"];
+    var _Object$setPrototypeOf = $__require('67')["default"];
+    var _Promise = $__require('a')["default"];
     !(function(global) {
       "use strict";
       var hasOwn = Object.prototype.hasOwnProperty;
@@ -6353,11 +5482,11 @@ $__System.registerDynamic("70", ["53", "11", "12", "16", "6a"], true, function($
         }
       };
     })(typeof global === "object" ? global : typeof window === "object" ? window : typeof self === "object" ? self : undefined);
-  })($__require('6a'));
+  })($__require('5e'));
   return module.exports;
 });
 
-$__System.registerDynamic("71", ["70"], true, function($__require, exports, module) {
+$__System.registerDynamic("68", ["65"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -6366,7 +5495,7 @@ $__System.registerDynamic("71", ["70"], true, function($__require, exports, modu
   var hadRuntime = g.regeneratorRuntime && Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
   var oldRuntime = hadRuntime && g.regeneratorRuntime;
   g.regeneratorRuntime = undefined;
-  module.exports = $__require('70');
+  module.exports = $__require('65');
   if (hadRuntime) {
     g.regeneratorRuntime = oldRuntime;
   } else {
@@ -6383,16 +5512,16 @@ $__System.registerDynamic("71", ["70"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("29", ["71"], true, function($__require, exports, module) {
+$__System.registerDynamic("35", ["68"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
       GLOBAL = this;
-  module.exports = $__require('71');
+  module.exports = $__require('68');
   return module.exports;
 });
 
-$__System.register("72", ["14"], function (_export) {
+$__System.register("69", ["4"], function (_export) {
 	"use strict";
 
 	var $;
@@ -6421,12 +5550,859 @@ $__System.register("72", ["14"], function (_export) {
 		}
 	};
 });
-$__System.register("73", ["14", "29", "72"], function (_export) {
-	var $, _regeneratorRuntime, dropFiles;
+$__System.registerDynamic("3d", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var toString = {}.toString;
+  module.exports = function(it) {
+    return toString.call(it).slice(8, -1);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("2b", ["3d"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var cof = $__require('3d');
+  module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it) {
+    return cof(it) == 'String' ? it.split('') : Object(it);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("28", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = function(it) {
+    if (it == undefined)
+      throw TypeError("Can't call method on  " + it);
+    return it;
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("39", ["2b", "28"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var IObject = $__require('2b'),
+      defined = $__require('28');
+  module.exports = function(it) {
+    return IObject(defined(it));
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("2c", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = function(exec) {
+    try {
+      return !!exec();
+    } catch (e) {
+      return true;
+    }
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("6a", ["d", "16", "2c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $export = $__require('d'),
+      core = $__require('16'),
+      fails = $__require('2c');
+  module.exports = function(KEY, exec) {
+    var fn = (core.Object || {})[KEY] || Object[KEY],
+        exp = {};
+    exp[KEY] = exec(fn);
+    $export($export.S + $export.F * fails(function() {
+      fn(1);
+    }), 'Object', exp);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("6b", ["39", "6a"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var toIObject = $__require('39');
+  $__require('6a')('getOwnPropertyDescriptor', function($getOwnPropertyDescriptor) {
+    return function getOwnPropertyDescriptor(it, key) {
+      return $getOwnPropertyDescriptor(toIObject(it), key);
+    };
+  });
+  return module.exports;
+});
+
+$__System.registerDynamic("6c", ["2a", "6b"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $ = $__require('2a');
+  $__require('6b');
+  module.exports = function getOwnPropertyDescriptor(it, key) {
+    return $.getDesc(it, key);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("6d", ["6c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('6c'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("5", ["6d"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var _Object$getOwnPropertyDescriptor = $__require('6d')["default"];
+  exports["default"] = function get(_x, _x2, _x3) {
+    var _again = true;
+    _function: while (_again) {
+      var object = _x,
+          property = _x2,
+          receiver = _x3;
+      _again = false;
+      if (object === null)
+        object = Function.prototype;
+      var desc = _Object$getOwnPropertyDescriptor(object, property);
+      if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);
+        if (parent === null) {
+          return undefined;
+        } else {
+          _x = parent;
+          _x2 = property;
+          _x3 = receiver;
+          _again = true;
+          desc = parent = undefined;
+          continue _function;
+        }
+      } else if ("value" in desc) {
+        return desc.value;
+      } else {
+        var getter = desc.get;
+        if (getter === undefined) {
+          return undefined;
+        }
+        return getter.call(receiver);
+      }
+    }
+  };
+  exports.__esModule = true;
+  return module.exports;
+});
+
+$__System.registerDynamic("6e", ["2a"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $ = $__require('2a');
+  module.exports = function create(P, D) {
+    return $.create(P, D);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("66", ["6e"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('6e'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("3f", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var global = module.exports = typeof window != 'undefined' && window.Math == Math ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+  if (typeof __g == 'number')
+    __g = global;
+  return module.exports;
+});
+
+$__System.registerDynamic("d", ["3f", "16", "c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var global = $__require('3f'),
+      core = $__require('16'),
+      ctx = $__require('c'),
+      PROTOTYPE = 'prototype';
+  var $export = function(type, name, source) {
+    var IS_FORCED = type & $export.F,
+        IS_GLOBAL = type & $export.G,
+        IS_STATIC = type & $export.S,
+        IS_PROTO = type & $export.P,
+        IS_BIND = type & $export.B,
+        IS_WRAP = type & $export.W,
+        exports = IS_GLOBAL ? core : core[name] || (core[name] = {}),
+        target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE],
+        key,
+        own,
+        out;
+    if (IS_GLOBAL)
+      source = name;
+    for (key in source) {
+      own = !IS_FORCED && target && key in target;
+      if (own && key in exports)
+        continue;
+      out = own ? target[key] : source[key];
+      exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key] : IS_BIND && own ? ctx(out, global) : IS_WRAP && target[key] == out ? (function(C) {
+        var F = function(param) {
+          return this instanceof C ? new C(param) : C(param);
+        };
+        F[PROTOTYPE] = C[PROTOTYPE];
+        return F;
+      })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+      if (IS_PROTO)
+        (exports[PROTOTYPE] || (exports[PROTOTYPE] = {}))[key] = out;
+    }
+  };
+  $export.F = 1;
+  $export.G = 2;
+  $export.S = 4;
+  $export.P = 8;
+  $export.B = 16;
+  $export.W = 32;
+  module.exports = $export;
+  return module.exports;
+});
+
+$__System.registerDynamic("5c", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = function(it) {
+    return typeof it === 'object' ? it !== null : typeof it === 'function';
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("26", ["5c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var isObject = $__require('5c');
+  module.exports = function(it) {
+    if (!isObject(it))
+      throw TypeError(it + ' is not an object!');
+    return it;
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("58", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = function(it) {
+    if (typeof it != 'function')
+      throw TypeError(it + ' is not a function!');
+    return it;
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("c", ["58"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var aFunction = $__require('58');
+  module.exports = function(fn, that, length) {
+    aFunction(fn);
+    if (that === undefined)
+      return fn;
+    switch (length) {
+      case 1:
+        return function(a) {
+          return fn.call(that, a);
+        };
+      case 2:
+        return function(a, b) {
+          return fn.call(that, a, b);
+        };
+      case 3:
+        return function(a, b, c) {
+          return fn.call(that, a, b, c);
+        };
+    }
+    return function() {
+      return fn.apply(that, arguments);
+    };
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("63", ["2a", "5c", "26", "c"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var getDesc = $__require('2a').getDesc,
+      isObject = $__require('5c'),
+      anObject = $__require('26');
+  var check = function(O, proto) {
+    anObject(O);
+    if (!isObject(proto) && proto !== null)
+      throw TypeError(proto + ": can't set as prototype!");
+  };
+  module.exports = {
+    set: Object.setPrototypeOf || ('__proto__' in {} ? function(test, buggy, set) {
+      try {
+        set = $__require('c')(Function.call, getDesc(Object.prototype, '__proto__').set, 2);
+        set(test, []);
+        buggy = !(test instanceof Array);
+      } catch (e) {
+        buggy = true;
+      }
+      return function setPrototypeOf(O, proto) {
+        check(O, proto);
+        if (buggy)
+          O.__proto__ = proto;
+        else
+          set(O, proto);
+        return O;
+      };
+    }({}, false) : undefined),
+    check: check
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("6f", ["d", "63"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $export = $__require('d');
+  $export($export.S, 'Object', {setPrototypeOf: $__require('63').set});
+  return module.exports;
+});
+
+$__System.registerDynamic("16", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var core = module.exports = {version: '1.2.6'};
+  if (typeof __e == 'number')
+    __e = core;
+  return module.exports;
+});
+
+$__System.registerDynamic("70", ["6f", "16"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  $__require('6f');
+  module.exports = $__require('16').Object.setPrototypeOf;
+  return module.exports;
+});
+
+$__System.registerDynamic("67", ["70"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('70'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("6", ["66", "67"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var _Object$create = $__require('66')["default"];
+  var _Object$setPrototypeOf = $__require('67')["default"];
+  exports["default"] = function(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }
+    subClass.prototype = _Object$create(superClass && superClass.prototype, {constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }});
+    if (superClass)
+      _Object$setPrototypeOf ? _Object$setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  };
+  exports.__esModule = true;
+  return module.exports;
+});
+
+$__System.registerDynamic("2a", [], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $Object = Object;
+  module.exports = {
+    create: $Object.create,
+    getProto: $Object.getPrototypeOf,
+    isEnum: {}.propertyIsEnumerable,
+    getDesc: $Object.getOwnPropertyDescriptor,
+    setDesc: $Object.defineProperty,
+    setDescs: $Object.defineProperties,
+    getKeys: $Object.keys,
+    getNames: $Object.getOwnPropertyNames,
+    getSymbols: $Object.getOwnPropertySymbols,
+    each: [].forEach
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("71", ["2a"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var $ = $__require('2a');
+  module.exports = function defineProperty(it, key, desc) {
+    return $.setDesc(it, key, desc);
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("72", ["71"], true, function($__require, exports, module) {
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  module.exports = {
+    "default": $__require('71'),
+    __esModule: true
+  };
+  return module.exports;
+});
+
+$__System.registerDynamic("7", ["72"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var _Object$defineProperty = $__require('72')["default"];
+  exports["default"] = (function() {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor)
+          descriptor.writable = true;
+        _Object$defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+    return function(Constructor, protoProps, staticProps) {
+      if (protoProps)
+        defineProperties(Constructor.prototype, protoProps);
+      if (staticProps)
+        defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  })();
+  exports.__esModule = true;
+  return module.exports;
+});
+
+$__System.registerDynamic("8", [], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  exports["default"] = function(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
+  exports.__esModule = true;
+  return module.exports;
+});
+
+$__System.register("3", ["7", "8"], function (_export) {
+	var _createClass, _classCallCheck, EventTarget;
+
+	return {
+		setters: [function (_) {
+			_createClass = _["default"];
+		}, function (_2) {
+			_classCallCheck = _2["default"];
+		}],
+		execute: function () {
+			"use strict";
+
+			EventTarget = (function () {
+				function EventTarget() {
+					_classCallCheck(this, EventTarget);
+
+					this.handlers = {};
+				}
+
+				_createClass(EventTarget, [{
+					key: "on",
+					value: function on(type, handler) {
+						if (typeof this.handlers[type] == "undefined") {
+							this.handlers[type] = []; //如果为空，则为第一次添加此事件，初始化为数组，以便添加多个事件
+						}
+						this.handlers[type].push(handler); //为该事件添加一个控制器
+					}
+				}, {
+					key: "emit",
+					value: function emit(event) {
+						if (!event.target) {
+							event.target = this;
+						}
+						if (this.handlers[event.type] instanceof Array) {
+							var handlers = this.handlers[event.type];
+							for (var i = 0, len = handlers.length; i < len; i++) handlers[i](event);
+						}
+					}
+				}, {
+					key: "removeHandler",
+					value: function removeHandler(type, handler) {
+						if (this.handlers[type] instanceof Array) {
+							var handlers = this.handlers[type];
+							for (var i = 0, len = handlers.length; i < len; i++) {
+								if (handlers[i] === handler) break;
+							}
+						}
+						handlers.splice(i, 1);
+					}
+				}]);
+
+				return EventTarget;
+			})();
+
+			_export("default", EventTarget);
+		}
+	};
+});
+$__System.register("34", ["3", "5", "6", "7", "8"], function (_export) {
+	var EventTarget, _get, _inherits, _createClass, _classCallCheck, Audio;
+
+	return {
+		setters: [function (_5) {
+			EventTarget = _5["default"];
+		}, function (_) {
+			_get = _["default"];
+		}, function (_2) {
+			_inherits = _2["default"];
+		}, function (_3) {
+			_createClass = _3["default"];
+		}, function (_4) {
+			_classCallCheck = _4["default"];
+		}],
+		execute: function () {
+			"use strict";
+
+			Audio = (function (_EventTarget) {
+				_inherits(Audio, _EventTarget);
+
+				function Audio() {
+					_classCallCheck(this, Audio);
+
+					_get(Object.getPrototypeOf(Audio.prototype), "constructor", this).call(this);
+					this._audioCtx = new AudioContext(); //实例化
+					this._buffer = null;
+					this._sourceNode = null;
+					this._scriptProcessorNode = null;
+					this._oldScriptProcessorNode = null;
+					this._oldSourceNode = null;
+					this._status = "init"; //ready,loading,playing,pause,init
+					this._currentTime = 0;
+					this._duration = 0;
+					this._oldTime = new Date();
+					this._m = 0;
+					this._s = 0;
+					this._curt = 0;
+					this._proceessTime = 0;
+					this._soundName = "";
+					this._soundId = "";
+				}
+
+				_createClass(Audio, [{
+					key: "_initNode",
+					value: function _initNode() {
+						//初始化音源节点
+						this._oldSourceNode = this._sourceNode; //备份旧节点
+						this._oldScriptProcessorNode = this._scriptProcessorNode;
+
+						this._sourceNode = this._audioCtx.createBufferSource(); //创建音源节点，用于读取音源
+						this._scriptProcessorNode = this._audioCtx.createScriptProcessor(4096, 2, 2);
+					}
+				}, {
+					key: "_disconnectOldNode",
+					value: function _disconnectOldNode() {
+						//断开旧节点，在播放新buffer时执行
+						try {
+							this._oldScriptProcessorNode.onaudioprocess = null;
+							this._oldSourceNode.onended = null;
+							this._oldSourceNode && this._oldSourceNode.disconnect(this._oldScriptProcessorNode); //旧节点断开连接
+							this._oldScriptProcessorNode && this._oldScriptProcessorNode.disconnect(this._audioCtx.destination); //旧节点断开连接				
+							delete this._oldSourceNode.buffer;
+							this._oldSourceNode = null;
+							this._oldScriptProcessorNode = null;
+						} catch (e) {
+							console.log(e);
+						}
+					}
+				}, {
+					key: "_disconnectNode",
+					value: function _disconnectNode() {
+						//断开当前节点，在暂停或停止时执行
+						try {
+							this._scriptProcessorNode.onaudioprocess = null;
+							this._sourceNode.onended = null;
+							this._sourceNode.disconnect(this._scriptProcessorNode); //旧节点断开连接
+							this._scriptProcessorNode.disconnect(this._audioCtx.destination); //旧节点断开连接						
+							delete this._sourceNode.buffer;
+							this._sourceNode = null;
+							this._scriptProcessorNode = null;
+						} catch (e) {
+							console.log(e);
+						}
+					}
+				}, {
+					key: "_connectNode",
+					value: function _connectNode() {
+						//连接节点，总是连接最新的节点
+						this._sourceNode.connect(this._scriptProcessorNode); //连接新节点
+						this._scriptProcessorNode.connect(this._audioCtx.destination); //连接新节点
+					}
+				}, {
+					key: "_refreshCurrentBuffer",
+					value: function _refreshCurrentBuffer(data, callback) {
+						//读取新音源到新音源节点
+						var self = this;
+						this._audioCtx.decodeAudioData(data, function (result) {
+							self._buffer = null;
+							self._buffer = result;
+							self._status = "ready";
+							callback();
+							console.log("刷新当前buffer完毕");
+						});
+					}
+				}, {
+					key: "_readFormCurrentBuffer",
+					value: function _readFormCurrentBuffer() {
+						//读取旧音源到新音频节点
+						this._initNode(); //新建音源节点
+						this._sourceNode.buffer = this._buffer; //当前音源赋值给新节点
+						this._duration = this._buffer.duration;
+						// this._buffer = null;
+						this._connectNode(); //重新连接
+						console.log("读取当前buffer完毕");
+					}
+				}, {
+					key: "getStatus",
+					value: function getStatus() {
+						return this._status;
+					}
+				}, {
+					key: "readFile",
+					value: function readFile(data, callback) {
+						this._status = "loading";
+						this._refreshCurrentBuffer(data, callback); //刷新当前buffer
+						console.log("新文件载入，开始刷新当前buffer");
+						this.emit({ type: "startload", message: event });
+					}
+				}, {
+					key: "play",
+					value: function play(offset) {
+						//buffer可能比现在播放的音频新
+						if (typeof offset === "number" || this._status === "pause" || this._status === "ready" || this._status === "stop") {
+							this._readFormCurrentBuffer(); //读取当前buffer中的音源
+							if (this._status === "pause" && typeof offset !== "number") //播放前是暂停状态，每个节点只能调用一次，重新读取音源
+								{
+									this._sourceNode.start(0, this._currentTime / 1000);
+								} else if (typeof offset === "number") {
+								this._disconnectOldNode(); //断开旧连接
+								this._currentTime = offset * 1000;
+								this._sourceNode.start(0, this._currentTime / 1000);
+							} else if (this._status === "stop") {
+								this._sourceNode.start(0); //播放前是停止状态
+							} else if (this._status === "ready") //播放前已经载入了一个新buffer
+									{
+										this._disconnectOldNode(); //断开旧连接
+										this._currentTime = 0;
+										this._sourceNode.start(0);
+									}
+							var self = this;
+							this._oldTime = new Date();
+							this._scriptProcessorNode.onaudioprocess = function (event) {
+								var inputBuffer = event.inputBuffer;
+								var outputBuffer = event.outputBuffer;
+								var now = Date.now();
+								var pastTime = now - self._oldTime;
+								for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+									var inputData = inputBuffer.getChannelData(channel);
+									var outputData = outputBuffer.getChannelData(channel);
+									for (var i = 0; i < inputBuffer.length; i++) {
+										outputData[i] = inputData[i];
+									}
+								}
+								self._currentTime += pastTime;
+								self._proceessTime += pastTime;
+								self._curt = self._currentTime / 1000;
+								self._m = parseInt(self._curt / 60);
+								self._s = parseInt(self._curt % 60);
+								self._oldTime = now;
+								if (self._proceessTime > 500) {
+									self._proceessTime = 0;
+									self.emit({ type: "proceess", message: event });
+								}
+							};
+							this._sourceNode.onended = function (event) {
+								self._scriptProcessorNode.onaudioprocess = null;
+								self._sourceNode.onended = null;
+								self._disconnectNode(); //断开连接
+								self._currentTime = 0;
+								self._status = "stop";
+								console.log("播放完毕");
+								self.emit({ type: "playend", message: event });
+							};
+							this._status = "playing";
+							this.emit({ type: "canplay", message: this });
+							console.log("播放当前buffer");
+						}
+					}
+				}, {
+					key: "getCurrentime",
+					value: function getCurrentime() {
+						var self = this;
+						return {
+							m: self._m,
+							s: self._s,
+							currentTime: self._curt
+						};
+					}
+				}, {
+					key: "pause",
+					value: function pause() {
+						if (this._status === "playing") {
+							this._sourceNode.stop(0); //停止
+							this._disconnectNode(); //断开连接
+							this._status = "pause";
+							console.log("已暂停，当前暂停时间计入播放时间线");
+						} else {
+							console.log("未处于播放状态，不能暂停");
+						}
+					}
+				}, {
+					key: "stop",
+					value: function stop() {
+						if (this._status === "playing") {
+							this._sourceNode.stop(0); //停止
+							this._disconnectNode(); //断开连接
+							this._currentTime = 0;
+							this._status = "stop";
+							console.log("已停止");
+						} else {
+							console.log("未处于播放状态，不能停止");
+						}
+					}
+				}, {
+					key: "getSoundName",
+					value: function getSoundName() {
+						return this._soundName;
+					}
+				}, {
+					key: "getSoundId",
+					value: function getSoundId() {
+						return this._Id;
+					}
+				}, {
+					key: "readAndPlay",
+					value: function readAndPlay(file, id) {
+						var self = this;
+						this._soundName = file.name;
+						this._Id = id;
+						this.stop();
+						var reader = new FileReader();
+						reader.readAsArrayBuffer(file);
+						reader.onload = function () {
+							self.readFile(reader.result, function () {
+								self.play();
+							});
+						};
+					}
+				}, {
+					key: "getDuration",
+					value: function getDuration() {
+						return this._duration;
+					}
+				}]);
+
+				return Audio;
+			})(EventTarget);
+
+			_export("default", new Audio());
+
+			// play.addEventListener("click", function(event){
+			// 	audioCtrl.play();
+			// },false);
+			// pause.addEventListener("click", function(event){
+			// 	audioCtrl.pause();
+			// },false);
+			// stop.addEventListener("click", function(event){
+			// 	audioCtrl.stop();
+			// },false);
+		}
+	};
+});
+$__System.register("73", ["4", "34", "35", "69"], function (_export) {
+	var $, audio, _regeneratorRuntime, dropFiles;
 
 	return {
 		setters: [function (_2) {
 			$ = _2["default"];
+		}, function (_4) {
+			audio = _4["default"];
 		}, function (_) {
 			_regeneratorRuntime = _["default"];
 		}, function (_3) {
@@ -6472,10 +6448,10 @@ $__System.register("73", ["14", "29", "72"], function (_export) {
 								$("#list-menu").on("mouseleave", null, events.leaveListMenu);
 								$("#list-menu").on("click", "li", events.clickListMenuItem);
 								//播放事件
-								app.audio.on("startload", events.startload);
-								app.audio.on("canplay", events.canplay);
-								app.audio.on("proceess", events.proceess);
-								app.audio.on("playend", events.playend);
+								audio.on("startload", events.startload);
+								audio.on("canplay", events.canplay);
+								audio.on("proceess", events.proceess);
+								audio.on("playend", events.playend);
 								//进度条
 								app.progressbar.on("pressBar", events.pressBar);
 								app.progressbar.on("stopDraggingFlag", events.stopDraggingFlag);
@@ -6648,7 +6624,7 @@ $__System.registerDynamic("76", ["75"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("6a", ["76"], true, function($__require, exports, module) {
+$__System.registerDynamic("5e", ["76"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -6657,7 +6633,7 @@ $__System.registerDynamic("6a", ["76"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("77", ["6a"], true, function($__require, exports, module) {
+$__System.registerDynamic("77", ["5e"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -12771,11 +12747,11 @@ $__System.registerDynamic("77", ["6a"], true, function($__require, exports, modu
       }
       return jQuery;
     });
-  })($__require('6a'));
+  })($__require('5e'));
   return module.exports;
 });
 
-$__System.registerDynamic("14", ["77"], true, function($__require, exports, module) {
+$__System.registerDynamic("4", ["77"], true, function($__require, exports, module) {
   ;
   var define,
       global = this,
@@ -12784,7 +12760,7 @@ $__System.registerDynamic("14", ["77"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.register("78", ["14"], function (_export) {
+$__System.register("78", ["4"], function (_export) {
 	"use strict";
 
 	var $;
@@ -12805,31 +12781,27 @@ $__System.register("78", ["14"], function (_export) {
 		}
 	};
 });
-$__System.register("1", ["2", "13", "14", "15", "28", "40", "73", "78", "2a", "3e"], function (_export) {
+$__System.register("1", ["2", "4", "9", "31", "33", "37", "73", "78"], function (_export) {
 	"use strict";
 
-	var audio, Progressbar, $, appFctory, db, events, addEvents, initFn, files, common, app;
+	var Progressbar, $, appFctory, db, common, events, addEvents, initFn, app;
 	return {
 		setters: [function (_2) {
-			audio = _2["default"];
-		}, function (_3) {
-			Progressbar = _3["default"];
+			Progressbar = _2["default"];
 		}, function (_) {
 			$ = _["default"];
+		}, function (_3) {
+			appFctory = _3["default"];
 		}, function (_4) {
-			appFctory = _4["default"];
+			db = _4["default"];
 		}, function (_5) {
-			db = _5["default"];
+			common = _5["default"];
 		}, function (_6) {
 			events = _6["default"];
 		}, function (_7) {
 			addEvents = _7["default"];
 		}, function (_8) {
 			initFn = _8["default"];
-		}, function (_a) {
-			files = _a["default"];
-		}, function (_e) {
-			common = _e["default"];
 		}],
 		execute: function () {
 			app = appFctory();
@@ -12838,7 +12810,6 @@ $__System.register("1", ["2", "13", "14", "15", "28", "40", "73", "78", "2a", "3
 				return {
 					width: $("#content").width(),
 					height: $("#content").height(),
-					audio: audio,
 					progressbar: new Progressbar("#prograss"),
 					timeEl: $("#status-info label").eq(0),
 					counterEl: $("#status-info label").eq(1),
@@ -12850,9 +12821,9 @@ $__System.register("1", ["2", "13", "14", "15", "28", "40", "73", "78", "2a", "3
 					fileCount: 0
 				};
 			});
-
-			app.add("db", db).add("files", files).add("_commonFn", common).add("_events", events).add("_addEvents", addEvents).init(initFn);
-			console.log("load");
+			db.open().then(function () {
+				app.add("_commonFn", common).add("_events", events).add("_addEvents", addEvents).init(initFn);
+			});
 		}
 	};
 });

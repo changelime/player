@@ -424,6 +424,8 @@ body {
   max-height: 0px;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 #list>li {
@@ -436,6 +438,8 @@ body {
   max-height: 100px;
   overflow: hidden;
   transition: all 1s;
+  width: 100%;
+  order: 1;
 }
 
 #list>li::before {
